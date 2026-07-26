@@ -51,6 +51,12 @@
 2. 版本管理去掉「比较最近两版」「恢复所选」，仅点选载入预览。
 3. 保存角色后触发 `recommend_persona_weights`，弹窗确认经历权重后再写入。
 
+## 岗位匹配页改版（同日）
+
+拍板：A1 左右分栏 / B1 摘要分数+弹窗分项 / C1 补强链学习 / D1 移除 stub、详情试算 what-if。
+
+实现：`pages.ts` jobs 纸面布局、`jobs.ts` 选中/证据/学习跳转/试算、`data-source` 保留 `jobDescId`+`rawText`+`matchId`；去掉列表堆叠与 disabled 假设分析。
+
 ## 热修：生成 / 调优纸面 / 导出 MD（同日）
 
 | Bug | 根因 | 修复 |
