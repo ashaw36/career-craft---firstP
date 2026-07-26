@@ -1,0 +1,6 @@
+{
+  "active": false,
+  "createUpdaterArtifacts": false,
+  "endpoint": "http://127.0.0.1:0/test-only",
+  "keyPolicy": "TEST-ONLY verifier injection; never accepted by production configuration"
+}

@@ -1,0 +1,12 @@
+{
+  "files": {
+    "career_skill/raw/sample-acme-notes.md": {
+      "sha256": "07acae65eb2d5d6fc69437489a8e8c98fa6c0393e0afadd93a3d284177b0e100",
+      "processed_at": "2026-07-19T13:24:37+08:00",
+      "experience_ids": [
+        "2020-01-acme-product-manager",
+        "2022-h2-acme-recsys-clarify"
+      ]
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "active": true,
+  "createUpdaterArtifacts": true,
+  "endpoints": ["https://REPLACE-WITH-OWNED-UPDATE-HOST/{{target}}/{{arch}}/{{current_version}}"],
+  "pubkey": "REPLACE-WITH-MINISIGN-PUBLIC-KEY",
+  "notes": "Example only. Production release is blocked until the endpoint is owned, the public key is pinned, the private key is held outside the repository, and signed artifact rollback is tested."
+}

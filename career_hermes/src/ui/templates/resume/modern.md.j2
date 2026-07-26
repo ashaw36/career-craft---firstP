@@ -1,0 +1,44 @@
+# {{ name }}
+
+> {{ identity_statement }}
+
+{% if career_narrative %}
+## 职业叙事
+
+{{ career_narrative }}
+{% endif %}
+
+## 工作经历
+
+{% for exp in experiences %}
+### {{ exp.title }} {% if exp.organization %}| {{ exp.organization }}{% endif %}
+
+*{{ exp.period }}* {% if exp.relevance_score > 0 %}|相关度: {{ "%.0f" | format(exp.relevance_score * 100) }}%{% endif %}
+
+{% if exp.description %}
+{{ exp.description }}
+{% endif %}
+
+{% if exp.achievements %}
+{% for ach in exp.achievements %}
+- {{ ach }}
+{% endfor %}
+{% endif %}
+
+{% if exp.metrics %}
+{% for m in exp.metrics %}
+- **{{ m.name }}**: {{ m.value }}{% if m.unit %} {{ m.unit }}{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if exp.skills %}
+**技能**: {{ exp.skills | join("、") }}
+{% endif %}
+
+---
+
+{% endfor %}
+
+---
+
+*由 CareerCraft Agent 生成于 {{ generated_at }}*

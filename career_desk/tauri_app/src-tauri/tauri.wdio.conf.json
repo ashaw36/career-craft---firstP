@@ -1,0 +1,23 @@
+{
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "CareerCraft E2E",
+        "width": 1200,
+        "height": 760,
+        "devtools": true
+      }
+    ],
+    "security": {
+      "capabilities": [
+        {
+          "identifier": "wdio-e2e",
+          "description": "Test-only WDIO command and embedded-driver permissions",
+          "windows": ["main"],
+          "permissions": ["core:default", "core:window:default", "wdio-webdriver:default"]
+        }
+      ]
+    }
+  }
+}

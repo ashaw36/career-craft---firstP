@@ -1,0 +1,10 @@
+import { spawn } from "node:child_process";import{resolve}from"node:path";
+const root=resolve(import.meta.dirname,".."),app=resolve(root,"src-tauri","target","debug","careercraft-desktop.exe");
+const child=spawn(app,[],{cwd:root,windowsHide:true,env:{...process.env,TAURI_WEBDRIVER_PORT:"4445",CAREERCRAFT_DATA_DIR:resolve(root,"artifacts","desktop-e2e","smoke-profile")}});
+const wd=async(method,path,body)=>{const r=await fetch(`http://127.0.0.1:4445${path}`,{method,headers:{"content-type":"application/json"},body:body===undefined?undefined:JSON.stringify(body)});const j=await r.json();if(!r.ok||j.value?.error)throw new Error(j.value?.message||String(r.status));return j.value};
+const wait=async()=>{for(let i=0;i<120;i++){try{await fetch("http://127.0.0.1:4445/status");return}catch{}await new Promise(r=>setTimeout(r,250))}throw new Error("embedded server timeout")};
+let session="";try{await wait();const made=await wd("POST","/session",{capabilities:{alwaysMatch:{browserName:"tauri"}}});session=made.sessionId;const find=async css=>(await wd("POST",`/session/${session}/element`,{using:"css selector",value:css}))["element-6066-11e4-a52e-4f735466cecf"];
+ const brand=await find(".brand");const title=await wd("GET",`/session/${session}/element/${brand}/text`);if(!String(title).includes("CareerCraft"))throw new Error(`bad title ${title}`);
+ const input=await find("#e2e-ipc-request"),send=await find("#e2e-ipc-send"),output=await find("#e2e-ipc-result");await wd("POST",`/session/${session}/element/${input}/value`,{text:JSON.stringify({command:"health"}),value:[...JSON.stringify({command:"health"})]});await wd("POST",`/session/${session}/element/${send}/click`,{});
+ let text="";for(let i=0;i<80;i++){text=await wd("GET",`/session/${session}/element/${output}/text`);if(text&&text!=="pending")break;await new Promise(r=>setTimeout(r,100))}const envelope=JSON.parse(text);if(envelope.success!==true||envelope.data?.status!=="ok")throw new Error(`health failed ${text}`);console.log(JSON.stringify({session,title,health:envelope.data.status}));
+}finally{if(session)try{await wd("DELETE",`/session/${session}`)}catch{}child.kill()}

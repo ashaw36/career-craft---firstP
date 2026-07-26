@@ -1,0 +1,4 @@
+import type{TaskStore}from"../../shared/state/tasks";
+const KEY="careercraft:selected-persona";
+export function selectedPersonaId(){return localStorage.getItem(KEY)??""}
+export function bind(root:HTMLElement,tasks:TaskStore){root.querySelectorAll<HTMLElement>("[data-edit-persona]").forEach(node=>{const button=document.createElement("button");button.className="secondary";button.textContent=selectedPersonaId()===node.dataset.editPersona?"当前角色":"切换到此角色";button.addEventListener("click",()=>{localStorage.setItem(KEY,node.dataset.editPersona??"");tasks.upsert({id:crypto.randomUUID(),label:"切换角色",phase:"completed",message:"当前角色已切换。",progress:100});root.querySelectorAll<HTMLButtonElement>("[data-switch-persona]").forEach(x=>x.textContent="切换到此角色");button.textContent="当前角色"});button.dataset.switchPersona=node.dataset.editPersona;node.before(button)})}

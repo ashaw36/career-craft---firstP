@@ -1,0 +1,19 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://careercraft.local/contracts/commands/v1/schema.json",
+  "title":"CareerCraft command DTO v1",
+  "$defs":{
+    "Uuid":{"type":"string","format":"uuid"},
+    "NonBlank":{"type":"string","minLength":1,"pattern":".*\\S.*"},
+    "Envelope":{"oneOf":[
+      {"type":"object","required":["success","data"],"properties":{"success":{"const":true},"data":{}},"additionalProperties":false},
+      {"type":"object","required":["success","error"],"properties":{"success":{"const":false},"error":{"$ref":"#/$defs/AppError"}},"additionalProperties":false}
+    ]},
+    "AppError":{"type":"object","required":["code","message"],"properties":{"code":{"enum":["VALIDATION","NOT_FOUND","CONFLICT","CANCELLED","UNAVAILABLE","INTERNAL"]},"message":{"type":"string"},"details":{"type":["object","null"]}},"additionalProperties":false},
+    "ExperienceInput":{"type":"object","required":["type","title","rawDescription"],"properties":{"id":{"$ref":"#/$defs/Uuid"},"type":{"enum":["work","project","education","certification"]},"title":{"$ref":"#/$defs/NonBlank"},"organization":{"type":["string","null"]},"startDate":{"type":["string","null"],"format":"date"},"endDate":{"type":["string","null"],"format":"date"},"rawDescription":{"type":"string"},"structuredAchievements":{"type":"array","items":{"type":"string"}},"skillsDemonstrated":{"type":"array","items":{"type":"string"}},"status":{"enum":["draft","confirmed","discarded","archived"]}},"additionalProperties":false},
+    "PersonaInput":{"type":"object","required":["name"],"properties":{"name":{"$ref":"#/$defs/NonBlank"},"identityStatement":{"type":"string"},"careerNarrative":{"type":"string"},"toneStyle":{"type":"string"},"capabilityWeights":{"type":"object","additionalProperties":{"type":"number","minimum":0,"maximum":1}},"targetJobProfiles":{"type":"array","items":{"type":"string"}},"maxExperiences":{"type":"integer","minimum":1},"preferredModel":{"type":["string","null"]}},"additionalProperties":false},
+    "FitScoreInput":{"type":"object","required":["personaId","experienceId","score"],"properties":{"personaId":{"$ref":"#/$defs/Uuid"},"experienceId":{"$ref":"#/$defs/Uuid"},"score":{"type":"number","minimum":0,"maximum":100}},"additionalProperties":false},
+    "TrackingStatus":{"enum":["new","interested","applied","interviewing","offered","rejected","ghosted","accepted","declined"]},
+    "TaskEvent":{"type":"object","required":["taskId","state"],"properties":{"taskId":{"$ref":"#/$defs/Uuid"},"state":{"enum":["started","progress","completed","failed","cancelled"]},"progress":{"type":"number","minimum":0,"maximum":1},"result":{},"error":{"$ref":"#/$defs/AppError"}}}
+  }
+}

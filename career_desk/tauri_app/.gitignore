@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+artifacts/
+release/careercraft-desktop.exe
+release/CareerCraft/
+.tools/
+logs/
+target/
+src-tauri/target/
+src-tauri/target-*/
+startup-*.log
+*.manifest

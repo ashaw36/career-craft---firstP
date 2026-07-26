@@ -1,0 +1,1866 @@
+[
+  {
+    "id": "user_research",
+    "name": "用户研究",
+    "category": "product_management",
+    "aliases": [
+      "用户调研",
+      "用户洞察"
+    ],
+    "prerequisites": [],
+    "level": 1,
+    "description": "通过访谈、问卷、可用性测试等方法深入理解用户需求与行为",
+    "resources": [
+      {
+        "type": "article",
+        "title": "用户研究方法入门",
+        "source": "NNGroup官方",
+        "url": "https://www.nngroup.com/articles/user-research-methods/",
+        "estimated_hours": 2
+      },
+      {
+        "type": "book",
+        "title": "用户体验要素：以用户为中心的产品设计",
+        "source": "豆瓣读书",
+        "url": "https://book.douban.com/subject/10750216/",
+        "estimated_hours": 8
+      },
+      {
+        "type": "repo",
+        "title": "Open Product Management — 产品管理资源合集",
+        "source": "GitHub",
+        "url": "https://github.com/tron1991/open-product-management",
+        "estimated_hours": 3
+      }
+    ]
+  },
+  {
+    "id": "requirement_analysis",
+    "name": "需求分析",
+    "category": "product_management",
+    "aliases": [
+      "需求挖掘",
+      "需求文档"
+    ],
+    "prerequisites": [
+      "user_research"
+    ],
+    "level": 2,
+    "description": "从用户痛点和业务目标出发，提炼可执行的产品需求",
+    "resources": [
+      {
+        "type": "article",
+        "title": "需求定义与分析方法",
+        "source": "NNGroup官方",
+        "url": "https://www.nngroup.com/articles/requirements-definition/",
+        "estimated_hours": 2
+      },
+      {
+        "type": "book",
+        "title": "启示录：打造用户喜爱的产品",
+        "source": "豆瓣读书",
+        "url": "https://book.douban.com/subject/27161852/",
+        "estimated_hours": 12
+      },
+      {
+        "type": "doc",
+        "title": "User Stories 官方指南",
+        "source": "Atlassian",
+        "url": "https://www.atlassian.com/agile/project-management/user-stories",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "prd_writing",
+    "name": "PRD撰写",
+    "category": "product_management",
+    "aliases": [
+      "产品需求文档",
+      "PRD文档"
+    ],
+    "prerequisites": [
+      "requirement_analysis"
+    ],
+    "level": 2,
+    "description": "将产品需求转化为结构清晰、可落地的需求文档",
+    "resources": [
+      {
+        "type": "article",
+        "title": "什么是产品需求文档 PRD",
+        "source": "ProductPlan",
+        "url": "https://www.productplan.com/glossary/product-requirements-document/",
+        "estimated_hours": 1
+      },
+      {
+        "type": "article",
+        "title": "How to Write a PRD",
+        "source": "Product School",
+        "url": "https://productschool.com/blog/product-management-2/product-requirements-document-prd/",
+        "estimated_hours": 2
+      },
+      {
+        "type": "repo",
+        "title": "Open Product Management — PRD 模板与案例",
+        "source": "GitHub",
+        "url": "https://github.com/tron1991/open-product-management",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "user_persona",
+    "name": "用户画像",
+    "category": "product_management",
+    "aliases": [
+      " personas ",
+      "用户角色模型"
+    ],
+    "prerequisites": [
+      "user_research"
+    ],
+    "level": 2,
+    "description": "基于数据和行为特征构建典型用户模型，指导产品设计",
+    "resources": [
+      {
+        "type": "article",
+        "title": "Personas 用户画像方法论",
+        "source": "NNGroup官方",
+        "url": "https://www.nngroup.com/articles/personas/",
+        "estimated_hours": 2
+      },
+      {
+        "type": "article",
+        "title": "Why Personas Fail — 避免常见陷阱",
+        "source": "NNGroup官方",
+        "url": "https://www.nngroup.com/articles/why-personas-fail/",
+        "estimated_hours": 1
+      },
+      {
+        "type": "doc",
+        "title": "Personas 专题文献",
+        "source": "Interaction Design Foundation",
+        "url": "https://www.interaction-design.org/literature/topics/personas",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "competitive_analysis",
+    "name": "竞品分析",
+    "category": "product_management",
+    "aliases": [
+      "竞争分析",
+      "竞品调研"
+    ],
+    "prerequisites": [
+      "user_research"
+    ],
+    "level": 2,
+    "description": "系统研究竞争对手产品，发现差异化机会与行业趋势",
+    "resources": [
+      {
+        "type": "article",
+        "title": "Competitive Usability Evaluations",
+        "source": "NNGroup官方",
+        "url": "https://www.nngroup.com/articles/competitive-usability-evaluations/",
+        "estimated_hours": 2
+      },
+      {
+        "type": "article",
+        "title": "How to Do a Competitive Analysis",
+        "source": "HubSpot",
+        "url": "https://blog.hubspot.com/marketing/competitive-analysis-kit",
+        "estimated_hours": 2
+      },
+      {
+        "type": "book",
+        "title": "点石成金：访客至上的网页设计秘笈",
+        "source": "豆瓣读书",
+        "url": "https://book.douban.com/subject/25732133/",
+        "estimated_hours": 6
+      }
+    ]
+  },
+  {
+    "id": "mvp_validation",
+    "name": "MVP验证",
+    "category": "product_management",
+    "aliases": [
+      "最小可行产品",
+      "产品验证"
+    ],
+    "prerequisites": [
+      "requirement_analysis"
+    ],
+    "level": 2,
+    "description": "以最小成本构建原型，快速验证市场假设与产品方向",
+    "resources": [
+      {
+        "type": "book",
+        "title": "精益创业",
+        "source": "豆瓣读书",
+        "url": "https://book.douban.com/subject/10945606/",
+        "estimated_hours": 10
+      },
+      {
+        "type": "article",
+        "title": "The Minimum Viable Product is a Process",
+        "source": "Y Combinator",
+        "url": "https://www.ycombinator.com/library/4q-a-minimum-viable-product-is-not-a-product-it-s-a-process",
+        "estimated_hours": 1
+      },
+      {
+        "type": "article",
+        "title": "Minimum Viable Product 指南",
+        "source": "ProductPlan",
+        "url": "https://www.productplan.com/glossary/minimum-viable-product/",
+        "estimated_hours": 1
+      }
+    ]
+  },
+  {
+    "id": "agile_development",
+    "name": "敏捷开发",
+    "category": "product_management",
+    "aliases": [
+      "Scrum",
+      "敏捷实践"
+    ],
+    "prerequisites": [],
+    "level": 2,
+    "description": "运用迭代、增量方式推进产品开发，快速响应变化",
+    "resources": [
+      {
+        "type": "doc",
+        "title": "What is Scrum 官方指南",
+        "source": "Scrum.org",
+        "url": "https://www.scrum.org/resources/what-is-scrum",
+        "estimated_hours": 2
+      },
+      {
+        "type": "doc",
+        "title": "Agile Project Management 教程",
+        "source": "Atlassian",
+        "url": "https://www.atlassian.com/agile/project-management",
+        "estimated_hours": 4
+      },
+      {
+        "type": "course",
+        "title": "Getting Started with Agile",
+        "source": "Coursera",
+        "url": "https://www.coursera.org/learn/uva-darden-getting-started-agile",
+        "estimated_hours": 6
+      }
+    ]
+  },
+  {
+    "id": "cross_team_collaboration",
+    "name": "跨团队协同",
+    "category": "product_management",
+    "aliases": [
+      "跨部门协作",
+      "团队协作"
+    ],
+    "prerequisites": [
+      "agile_development"
+    ],
+    "level": 2,
+    "description": "协调设计、开发、运营等多团队资源，推动项目落地",
+    "resources": [
+      {
+        "type": "article",
+        "title": "How to Collaborate Across a Hybrid Workplace",
+        "source": "Harvard Business Review",
+        "url": "https://hbr.org/2021/03/how-to-collaborate-across-a-hybrid-workplace",
+        "estimated_hours": 1
+      },
+      {
+        "type": "book",
+        "title": "团队协作的五大障碍",
+        "source": "豆瓣读书",
+        "url": "https://book.douban.com/subject/1079362/",
+        "estimated_hours": 6
+      },
+      {
+        "type": "doc",
+        "title": "Team Collaboration 最佳实践",
+        "source": "Atlassian",
+        "url": "https://www.atlassian.com/blog/teamwork",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "data_driven_decision",
+    "name": "数据驱动决策",
+    "category": "product_management",
+    "aliases": [
+      "数据决策",
+      "数据化运营"
+    ],
+    "prerequisites": [
+      "data_analysis"
+    ],
+    "level": 2,
+    "description": "基于数据指标与分析结果做出科学的产品决策",
+    "resources": [
+      {
+        "type": "book",
+        "title": "精益数据分析",
+        "source": "豆瓣读书",
+        "url": "https://book.douban.com/subject/25766028/",
+        "estimated_hours": 10
+      },
+      {
+        "type": "article",
+        "title": "Data-Driven Decision Making",
+        "source": "Mixpanel",
+        "url": "https://mixpanel.com/blog/data-driven-decision-making/",
+        "estimated_hours": 2
+      },
+      {
+        "type": "article",
+        "title": "How to Use Data to Make Better Decisions",
+        "source": "Harvard Business Review",
+        "url": "https://hbr.org/2020/03/how-to-use-data-to-make-better-decisions",
+        "estimated_hours": 1
+      }
+    ]
+  },
+  {
+    "id": "okr_management",
+    "name": "OKR管理",
+    "category": "product_management",
+    "aliases": [
+      "目标管理",
+      "OKR制定"
+    ],
+    "prerequisites": [],
+    "level": 2,
+    "description": "设定并跟踪目标与关键结果，对齐团队方向",
+    "resources": [
+      {
+        "type": "book",
+        "title": "OKR工作法",
+        "source": "豆瓣读书",
+        "url": "https://book.douban.com/subject/27132072/",
+        "estimated_hours": 6
+      },
+      {
+        "type": "article",
+        "title": "OKRs 目标与关键结果",
+        "source": "NNGroup官方",
+        "url": "https://www.nngroup.com/articles/okrs/",
+        "estimated_hours": 2
+      },
+      {
+        "type": "article",
+        "title": "Introduction to OKRs",
+        "source": "What Matters",
+        "url": "https://www.whatmatters.com/faqs/okr-introduction",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "ab_testing",
+    "name": "A/B测试",
+    "category": "product_management",
+    "aliases": [
+      "分流测试",
+      "对照实验"
+    ],
+    "prerequisites": [
+      "data_driven_decision"
+    ],
+    "level": 3,
+    "description": "设计并执行对照实验，用统计方法评估产品改动效果",
+    "resources": [
+      {
+        "type": "article",
+        "title": "Introduction to A/B Testing",
+        "source": "Optimizely",
+        "url": "https://www.optimizely.com/resources/introduction-to-a-b-testing/",
+        "estimated_hours": 2
+      },
+      {
+        "type": "doc",
+        "title": "Google Optimize 官方文档",
+        "source": "Google",
+        "url": "https://support.google.com/optimize/answer/6211930?hl=zh-Hans",
+        "estimated_hours": 2
+      },
+      {
+        "type": "article",
+        "title": "A/B Testing Guide",
+        "source": "VWO",
+        "url": "https://vwo.com/ab-testing/",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "growth_strategy",
+    "name": "增长策略",
+    "category": "product_management",
+    "aliases": [
+      "用户增长",
+      "增长黑客"
+    ],
+    "prerequisites": [
+      "data_driven_decision",
+      "ab_testing"
+    ],
+    "level": 3,
+    "description": "制定并实施产品增长方案，实现用户与收入的可持续增长",
+    "resources": [
+      {
+        "type": "book",
+        "title": "增长黑客",
+        "source": "豆瓣读书",
+        "url": "https://book.douban.com/subject/27593848/",
+        "estimated_hours": 8
+      },
+      {
+        "type": "article",
+        "title": "Growth Hacking 增长黑客指南",
+        "source": "ProductPlan",
+        "url": "https://www.productplan.com/glossary/growth-hacking/",
+        "estimated_hours": 2
+      },
+      {
+        "type": "article",
+        "title": "Growth Hacking Guide",
+        "source": "HubSpot",
+        "url": "https://blog.hubspot.com/marketing/growth-hacking",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "roadmap_planning",
+    "name": "Roadmap规划",
+    "category": "product_management",
+    "aliases": [
+      "产品路线图",
+      "版本规划"
+    ],
+    "prerequisites": [
+      "requirement_analysis",
+      "prd_writing"
+    ],
+    "level": 3,
+    "description": "制定中长期产品发展路线图，平衡战略与执行节奏",
+    "resources": [
+      {
+        "type": "article",
+        "title": "Product Roadmaps 产品路线图",
+        "source": "NNGroup官方",
+        "url": "https://www.nngroup.com/articles/roadmap/",
+        "estimated_hours": 2
+      },
+      {
+        "type": "article",
+        "title": "Product Roadmap 完全指南",
+        "source": "ProductPlan",
+        "url": "https://www.productplan.com/learn/product-roadmap/",
+        "estimated_hours": 3
+      },
+      {
+        "type": "doc",
+        "title": "Product Roadmaps 敏捷实践",
+        "source": "Atlassian",
+        "url": "https://www.atlassian.com/agile/product-management/product-roadmaps",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "business_model_design",
+    "name": "商业模式设计",
+    "category": "product_management",
+    "aliases": [
+      "商业设计",
+      "盈利模式"
+    ],
+    "prerequisites": [
+      "competitive_analysis"
+    ],
+    "level": 3,
+    "description": "构建产品的价值创造、传递与获取机制",
+    "resources": [
+      {
+        "type": "book",
+        "title": "商业模式新生代",
+        "source": "豆瓣读书",
+        "url": "https://book.douban.com/subject/20428704/",
+        "estimated_hours": 8
+      },
+      {
+        "type": "article",
+        "title": "Business Model Canvas 商业模式画布",
+        "source": "Strategyzer",
+        "url": "https://www.strategyzer.com/library/business-model-canvas",
+        "estimated_hours": 3
+      },
+      {
+        "type": "article",
+        "title": "What Is a Business Model",
+        "source": "Harvard Business Review",
+        "url": "https://hbr.org/2015/01/what-is-a-business-model",
+        "estimated_hours": 1
+      }
+    ]
+  },
+  {
+    "id": "product_lifecycle",
+    "name": "产品生命周期",
+    "category": "product_management",
+    "aliases": [
+      "生命周期管理",
+      "产品阶段"
+    ],
+    "prerequisites": [
+      "roadmap_planning"
+    ],
+    "level": 3,
+    "description": "管理产品从引入、成长、成熟到退化的全生命周期策略",
+    "resources": [
+      {
+        "type": "article",
+        "title": "Product Life Cycle 产品生命周期",
+        "source": "HubSpot",
+        "url": "https://blog.hubspot.com/sales/product-life-cycle",
+        "estimated_hours": 2
+      },
+      {
+        "type": "doc",
+        "title": "Product Life-Cycle Theory",
+        "source": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Product_life-cycle_theory",
+        "estimated_hours": 1
+      },
+      {
+        "type": "article",
+        "title": "Product Lifecycle 定义与阶段",
+        "source": "ProductPlan",
+        "url": "https://www.productplan.com/glossary/product-lifecycle/",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "python",
+    "name": "Python",
+    "category": "technical",
+    "aliases": [
+      "Python编程",
+      "Py"
+    ],
+    "prerequisites": [],
+    "level": 1,
+    "description": "使用Python进行脚本编写、数据处理与自动化开发",
+    "resources": [
+      {
+        "type": "doc",
+        "title": "Python 官方中文教程",
+        "source": "Python官方",
+        "url": "https://docs.python.org/zh-cn/3/tutorial/",
+        "estimated_hours": 15
+      },
+      {
+        "type": "repo",
+        "title": "awesome-python",
+        "source": "GitHub",
+        "url": "https://github.com/vinta/awesome-python",
+        "estimated_hours": 0
+      },
+      {
+        "type": "course",
+        "title": "廖雪峰 Python 教程",
+        "source": "廖雪峰官网",
+        "url": "https://www.liaoxuefeng.com/wiki/1016959663602400",
+        "estimated_hours": 25
+      }
+    ]
+  },
+  {
+    "id": "sql",
+    "name": "SQL",
+    "category": "technical",
+    "aliases": [
+      "结构化查询语言",
+      "数据库查询"
+    ],
+    "prerequisites": [],
+    "level": 1,
+    "description": "编写查询语句从关系型数据库中提取、处理数据",
+    "resources": [
+      {
+        "type": "doc",
+        "title": "SQLBolt 交互式 SQL 教程",
+        "source": "SQLBolt",
+        "url": "https://sqlbolt.com/",
+        "estimated_hours": 8
+      },
+      {
+        "type": "course",
+        "title": "菜鸟教程 SQL",
+        "source": "RUNOOB",
+        "url": "https://www.runoob.com/sql/sql-tutorial.html",
+        "estimated_hours": 10
+      },
+      {
+        "type": "repo",
+        "title": "Python-100-Days（含 SQL 部分）",
+        "source": "GitHub",
+        "url": "https://github.com/jackfrued/Python-100-Days",
+        "estimated_hours": 30
+      }
+    ]
+  },
+  {
+    "id": "git_collaboration",
+    "name": "Git协作",
+    "category": "technical",
+    "aliases": [
+      "版本控制",
+      "Git工作流"
+    ],
+    "prerequisites": [],
+    "level": 1,
+    "description": "使用Git进行代码版本管理与团队协作开发",
+    "resources": [
+      {
+        "type": "doc",
+        "title": "Pro Git 中文文档",
+        "source": "Git官方",
+        "url": "https://git-scm.com/book/zh/v2",
+        "estimated_hours": 12
+      },
+      {
+        "type": "course",
+        "title": "廖雪峰 Git 教程",
+        "source": "廖雪峰官网",
+        "url": "https://www.liaoxuefeng.com/wiki/896043488029600",
+        "estimated_hours": 8
+      },
+      {
+        "type": "repo",
+        "title": "git-flight-rules",
+        "source": "GitHub",
+        "url": "https://github.com/k88hudson/git-flight-rules",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "data_analysis",
+    "name": "数据分析",
+    "category": "technical",
+    "aliases": [
+      "数据分析能力",
+      "定量分析"
+    ],
+    "prerequisites": [
+      "sql",
+      "python"
+    ],
+    "level": 2,
+    "description": "运用统计方法与工具对数据进行清洗、建模与洞察提取",
+    "resources": [
+      {
+        "type": "repo",
+        "title": "pandas_exercises",
+        "source": "GitHub",
+        "url": "https://github.com/guipsamora/pandas_exercises",
+        "estimated_hours": 10
+      },
+      {
+        "type": "course",
+        "title": "菜鸟教程 Pandas",
+        "source": "RUNOOB",
+        "url": "https://www.runoob.com/pandas/pandas-tutorial.html",
+        "estimated_hours": 12
+      },
+      {
+        "type": "doc",
+        "title": "Pandas 10分钟入门",
+        "source": "Pandas官方",
+        "url": "https://pandas.pydata.org/docs/user_guide/10min.html",
+        "estimated_hours": 3
+      }
+    ]
+  },
+  {
+    "id": "api_design",
+    "name": "API设计",
+    "category": "technical",
+    "aliases": [
+      "接口设计",
+      "RESTful API"
+    ],
+    "prerequisites": [
+      "python"
+    ],
+    "level": 2,
+    "description": "设计清晰、可扩展的应用程序接口，支撑前后端协作",
+    "resources": [
+      {
+        "type": "article",
+        "title": "RESTful API 设计指南",
+        "source": "阮一峰博客",
+        "url": "https://www.ruanyifeng.com/blog/2014/05/restful_api.html",
+        "estimated_hours": 2
+      },
+      {
+        "type": "repo",
+        "title": "Microsoft API Guidelines",
+        "source": "GitHub",
+        "url": "https://github.com/microsoft/api-guidelines",
+        "estimated_hours": 5
+      },
+      {
+        "type": "doc",
+        "title": "OpenAPI Specification v3.0",
+        "source": "Swagger",
+        "url": "https://swagger.io/docs/specification/v3_0/basic-structure/",
+        "estimated_hours": 6
+      }
+    ]
+  },
+  {
+    "id": "docker",
+    "name": "Docker",
+    "category": "technical",
+    "aliases": [
+      "容器化",
+      "容器技术"
+    ],
+    "prerequisites": [],
+    "level": 2,
+    "description": "使用容器技术封装应用环境，实现一致部署与快速扩展",
+    "resources": [
+      {
+        "type": "doc",
+        "title": "Docker 官方入门文档",
+        "source": "Docker官方",
+        "url": "https://docs.docker.com/get-started/",
+        "estimated_hours": 8
+      },
+      {
+        "type": "repo",
+        "title": "docker_practice",
+        "source": "GitHub",
+        "url": "https://github.com/yeasy/docker_practice",
+        "estimated_hours": 10
+      },
+      {
+        "type": "course",
+        "title": "菜鸟教程 Docker",
+        "source": "RUNOOB",
+        "url": "https://www.runoob.com/docker/docker-tutorial.html",
+        "estimated_hours": 8
+      }
+    ]
+  },
+  {
+    "id": "kubernetes",
+    "name": "Kubernetes",
+    "category": "technical",
+    "aliases": [
+      "K8s",
+      "容器编排"
+    ],
+    "prerequisites": [
+      "docker"
+    ],
+    "level": 3,
+    "description": "使用 Kubernetes 进行容器编排、自动扩缩与集群管理",
+    "resources": [
+      {
+        "type": "doc",
+        "title": "Kubernetes 基础教程（中文）",
+        "source": "K8s官方",
+        "url": "https://kubernetes.io/zh-cn/docs/tutorials/kubernetes-basics/",
+        "estimated_hours": 12
+      },
+      {
+        "type": "repo",
+        "title": "kubernetes-the-hard-way",
+        "source": "GitHub",
+        "url": "https://github.com/kelseyhightower/kubernetes-the-hard-way",
+        "estimated_hours": 15
+      },
+      {
+        "type": "course",
+        "title": "菜鸟教程 Kubernetes",
+        "source": "RUNOOB",
+        "url": "https://www.runoob.com/kubernetes/kubernetes-tutorial.html",
+        "estimated_hours": 10
+      }
+    ]
+  },
+  {
+    "id": "frontend_basics",
+    "name": "前端基础",
+    "category": "technical",
+    "aliases": [
+      "Web前端",
+      "HTML/CSS/JS"
+    ],
+    "prerequisites": [],
+    "level": 2,
+    "description": "掌握基础前端技术，理解Web页面结构与交互原理",
+    "resources": [
+      {
+        "type": "doc",
+        "title": "MDN Web 文档（中文）",
+        "source": "MDN",
+        "url": "https://developer.mozilla.org/zh-CN/docs/Web",
+        "estimated_hours": 20
+      },
+      {
+        "type": "course",
+        "title": "菜鸟教程 HTML/CSS",
+        "source": "RUNOOB",
+        "url": "https://www.runoob.com/html/html-tutorial.html",
+        "estimated_hours": 15
+      },
+      {
+        "type": "repo",
+        "title": "Web 前端入门笔记",
+        "source": "GitHub",
+        "url": "https://github.com/qianguyihao/Web",
+        "estimated_hours": 25
+      }
+    ]
+  },
+  {
+    "id": "automated_testing",
+    "name": "自动化测试",
+    "category": "technical",
+    "aliases": [
+      "测试自动化",
+      "单元测试"
+    ],
+    "prerequisites": [
+      "python"
+    ],
+    "level": 2,
+    "description": "编写自动化测试用例，提升代码质量与发布效率",
+    "resources": [
+      {
+        "type": "repo",
+        "title": "pytest",
+        "source": "GitHub",
+        "url": "https://github.com/pytest-dev/pytest",
+        "estimated_hours": 5
+      },
+      {
+        "type": "doc",
+        "title": "pytest 官方文档",
+        "source": "pytest官方",
+        "url": "https://docs.pytest.org/en/stable/",
+        "estimated_hours": 8
+      },
+      {
+        "type": "course",
+        "title": "菜鸟教程 Python 单元测试",
+        "source": "RUNOOB",
+        "url": "https://www.runoob.com/python3/python3-unit-test.html",
+        "estimated_hours": 5
+      }
+    ]
+  },
+  {
+    "id": "data_visualization",
+    "name": "数据可视化",
+    "category": "technical",
+    "aliases": [
+      "可视化",
+      "图表制作"
+    ],
+    "prerequisites": [
+      "data_analysis"
+    ],
+    "level": 2,
+    "description": "将复杂数据转化为直观图表，辅助理解与决策",
+    "resources": [
+      {
+        "type": "repo",
+        "title": "awesome-dataviz",
+        "source": "GitHub",
+        "url": "https://github.com/fasouto/awesome-dataviz",
+        "estimated_hours": 2
+      },
+      {
+        "type": "doc",
+        "title": "ECharts 官网",
+        "source": "Apache ECharts",
+        "url": "https://echarts.apache.org/zh/index.html",
+        "estimated_hours": 10
+      },
+      {
+        "type": "course",
+        "title": "菜鸟教程 Matplotlib",
+        "source": "RUNOOB",
+        "url": "https://www.runoob.com/matplotlib/matplotlib-tutorial.html",
+        "estimated_hours": 8
+      }
+    ]
+  },
+  {
+    "id": "cloud_computing_basics",
+    "name": "云计算基础",
+    "category": "technical",
+    "aliases": [
+      "云服务",
+      "云架构"
+    ],
+    "prerequisites": [
+      "docker"
+    ],
+    "level": 2,
+    "description": "理解云计算核心概念，使用主流云服务平台部署资源",
+    "resources": [
+      {
+        "type": "doc",
+        "title": "阿里云 ECS 产品文档",
+        "source": "阿里云",
+        "url": "https://www.aliyun.com/product/ecs",
+        "estimated_hours": 6
+      },
+      {
+        "type": "course",
+        "title": "阿里云大学",
+        "source": "阿里云",
+        "url": "https://edu.aliyun.com/",
+        "estimated_hours": 15
+      },
+      {
+        "type": "article",
+        "title": "腾讯云开发者手册",
+        "source": "腾讯云",
+        "url": "https://cloud.tencent.com/developer/techpedia",
+        "estimated_hours": 10
+      }
+    ]
+  },
+  {
+    "id": "system_architecture",
+    "name": "系统架构",
+    "category": "technical",
+    "aliases": [
+      "架构设计",
+      "系统设计"
+    ],
+    "prerequisites": [
+      "api_design"
+    ],
+    "level": 3,
+    "description": "设计高可用、可扩展的系统整体架构与技术方案",
+    "resources": [
+      {
+        "type": "repo",
+        "title": "system-design-primer",
+        "source": "GitHub",
+        "url": "https://github.com/donnemartin/system-design-primer",
+        "estimated_hours": 20
+      },
+      {
+        "type": "article",
+        "title": "InfoQ 架构设计专题",
+        "source": "InfoQ",
+        "url": "https://www.infoq.cn/topic/system-design",
+        "estimated_hours": 10
+      },
+      {
+        "type": "doc",
+        "title": "Azure 架构中心",
+        "source": "Microsoft",
+        "url": "https://docs.microsoft.com/zh-cn/azure/architecture/",
+        "estimated_hours": 15
+      }
+    ]
+  },
+  {
+    "id": "machine_learning_basics",
+    "name": "机器学习基础",
+    "category": "technical",
+    "aliases": [
+      "ML基础",
+      "机器学习入门"
+    ],
+    "prerequisites": [
+      "python",
+      "data_analysis"
+    ],
+    "level": 3,
+    "description": "掌握常见机器学习算法原理与应用场景",
+    "resources": [
+      {
+        "type": "repo",
+        "title": "machine-learning-octave",
+        "source": "GitHub",
+        "url": "https://github.com/trekhleb/machine-learning-octave",
+        "estimated_hours": 15
+      },
+      {
+        "type": "doc",
+        "title": "scikit-learn 官方文档",
+        "source": "scikit-learn",
+        "url": "https://scikit-learn.org/stable/",
+        "estimated_hours": 20
+      },
+      {
+        "type": "course",
+        "title": "Coursera 机器学习（吴恩达）",
+        "source": "Coursera",
+        "url": "https://www.coursera.org/learn/machine-learning",
+        "estimated_hours": 60
+      }
+    ]
+  },
+  {
+    "id": "etl_pipeline",
+    "name": "ETL流程",
+    "category": "technical",
+    "aliases": [
+      "数据抽取转换加载",
+      "数据管道"
+    ],
+    "prerequisites": [
+      "sql",
+      "data_analysis"
+    ],
+    "level": 3,
+    "description": "构建数据抽取、转换、加载的自动化流程",
+    "resources": [
+      {
+        "type": "repo",
+        "title": "awesome-etl",
+        "source": "GitHub",
+        "url": "https://github.com/pawl/awesome-etl",
+        "estimated_hours": 3
+      },
+      {
+        "type": "course",
+        "title": "菜鸟教程 Apache Airflow",
+        "source": "RUNOOB",
+        "url": "https://www.runoob.com/apache_airflow/apache-airflow-tutorial.html",
+        "estimated_hours": 10
+      },
+      {
+        "type": "doc",
+        "title": "Apache Airflow 官方文档",
+        "source": "Apache",
+        "url": "https://airflow.apache.org/docs/",
+        "estimated_hours": 12
+      }
+    ]
+  },
+  {
+    "id": "llm_applications",
+    "name": "大模型应用",
+    "category": "technical",
+    "aliases": [
+      "LLM应用",
+      "大语言模型"
+    ],
+    "prerequisites": [
+      "python",
+      "machine_learning_basics"
+    ],
+    "level": 3,
+    "description": "基于大语言模型构建智能应用与业务解决方案",
+    "resources": [
+      {
+        "type": "repo",
+        "title": "LangChain",
+        "source": "GitHub",
+        "url": "https://github.com/langchain-ai/langchain",
+        "estimated_hours": 10
+      },
+      {
+        "type": "doc",
+        "title": "LangChain 官方文档",
+        "source": "LangChain",
+        "url": "https://python.langchain.com/docs/intro/",
+        "estimated_hours": 12
+      },
+      {
+        "type": "repo",
+        "title": "DataWhale LLM 学习笔记",
+        "source": "GitHub",
+        "url": "https://github.com/datawhalechina/llm-cookbook",
+        "estimated_hours": 20
+      }
+    ]
+  },
+  {
+    "id": "performance_optimization",
+    "name": "性能优化",
+    "category": "technical",
+    "aliases": [
+      "系统优化",
+      "性能调优"
+    ],
+    "prerequisites": [
+      "system_architecture"
+    ],
+    "level": 3,
+    "description": "定位并优化系统瓶颈，提升响应速度与资源利用率",
+    "resources": [
+      {
+        "type": "repo",
+        "title": "awesome-wpo",
+        "source": "GitHub",
+        "url": "https://github.com/davidsonfellipe/awesome-wpo",
+        "estimated_hours": 3
+      },
+      {
+        "type": "doc",
+        "title": "Chrome DevTools Performance",
+        "source": "Google",
+        "url": "https://developer.chrome.com/docs/devtools/performance/",
+        "estimated_hours": 6
+      },
+      {
+        "type": "article",
+        "title": "阿里云性能优化实践",
+        "source": "阿里云开发者社区",
+        "url": "https://developer.aliyun.com/article/",
+        "estimated_hours": 8
+      }
+    ]
+  },
+  {
+    "id": "time_management",
+    "name": "时间管理",
+    "category": "management",
+    "aliases": [
+      "效率管理",
+      "日程规划"
+    ],
+    "prerequisites": [],
+    "level": 1,
+    "description": "科学分配与利用时间，提升个人与团队工作效率",
+    "resources": [
+      {
+        "type": "book",
+        "title": "高效能人士的七个习惯",
+        "source": "豆瓣读书",
+        "url": "https://book.douban.com/subject/5325618/",
+        "estimated_hours": 10
+      },
+      {
+        "type": "book",
+        "title": "番茄工作法图解",
+        "source": "豆瓣读书",
+        "url": "https://book.douban.com/subject/25872352/",
+        "estimated_hours": 4
+      },
+      {
+        "type": "article",
+        "title": "What is GTD gettingthingsdone",
+        "source": "GTD官方",
+        "url": "https://gettingthingsdone.com/what-is-gtd/",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "communication_skills",
+    "name": "沟通表达",
+    "category": "management",
+    "aliases": [
+      "沟通能力",
+      "有效沟通"
+    ],
+    "prerequisites": [],
+    "level": 1,
+    "description": "清晰传递信息，建立良好的工作关系与协作氛围",
+    "resources": [
+      {
+        "type": "book",
+        "title": "金字塔原理",
+        "source": "豆瓣读书",
+        "url": "https://book.douban.com/subject/25775620/",
+        "estimated_hours": 8
+      },
+      {
+        "type": "book",
+        "title": "非暴力沟通",
+        "source": "豆瓣读书",
+        "url": "https://book.douban.com/subject/3533221/",
+        "estimated_hours": 6
+      },
+      {
+        "type": "article",
+        "title": "Public Speaking Tips 公众演讲技巧",
+        "source": "Toastmasters",
+        "url": "https://www.toastmasters.org/resources/public-speaking-tips",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "project_management",
+    "name": "项目管理",
+    "category": "management",
+    "aliases": [
+      "项目推进",
+      "PM能力"
+    ],
+    "prerequisites": [],
+    "level": 2,
+    "description": "规划、执行与监控项目进度，确保目标按时达成",
+    "resources": [
+      {
+        "type": "course",
+        "title": "Google 项目管理专业证书",
+        "source": "Coursera",
+        "url": "https://www.coursera.org/professional-certificates/google-project-management",
+        "estimated_hours": 40
+      },
+      {
+        "type": "doc",
+        "title": "PMI 项目管理协会官网",
+        "source": "PMI",
+        "url": "https://www.pmi.org/",
+        "estimated_hours": 5
+      },
+      {
+        "type": "article",
+        "title": "维基百科：项目管理",
+        "source": "Wikipedia",
+        "url": "https://zh.wikipedia.org/wiki/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "upward_management",
+    "name": "向上管理",
+    "category": "management",
+    "aliases": [
+      "管理层沟通",
+      "向上汇报"
+    ],
+    "prerequisites": [],
+    "level": 2,
+    "description": "有效管理与上级的关系，争取资源支持与决策认可",
+    "resources": [
+      {
+        "type": "video",
+        "title": "职场高阶沟通与向上管理实战",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1S54y1G7Cg",
+        "estimated_hours": 5
+      },
+      {
+        "type": "article",
+        "title": "向上管理：如何管理你的老板",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/348884491",
+        "estimated_hours": 2
+      },
+      {
+        "type": "video",
+        "title": "管理者情商与向上汇报技巧",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1aK4y1e7Zx",
+        "estimated_hours": 4
+      }
+    ]
+  },
+  {
+    "id": "priority_management",
+    "name": "优先级排序",
+    "category": "management",
+    "aliases": [
+      "优先级管理",
+      "要事第一"
+    ],
+    "prerequisites": [
+      "time_management"
+    ],
+    "level": 2,
+    "description": "识别关键任务，合理排序以最大化产出价值",
+    "resources": [
+      {
+        "type": "video",
+        "title": "时间管理四象限与优先级排序",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1Fa4y1Y7mE",
+        "estimated_hours": 3
+      },
+      {
+        "type": "article",
+        "title": "优先级管理方法论：要事第一",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/377026265",
+        "estimated_hours": 2
+      },
+      {
+        "type": "article",
+        "title": "高效能人士的七个习惯实践",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/365789890",
+        "estimated_hours": 3
+      }
+    ]
+  },
+  {
+    "id": "conflict_resolution",
+    "name": "冲突解决",
+    "category": "management",
+    "aliases": [
+      "矛盾处理",
+      "冲突管理"
+    ],
+    "prerequisites": [
+      "communication_skills"
+    ],
+    "level": 2,
+    "description": "识别并化解团队内外冲突，维护协作效率",
+    "resources": [
+      {
+        "type": "video",
+        "title": "团队冲突管理与沟通技巧",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1bt411g7jH",
+        "estimated_hours": 6
+      },
+      {
+        "type": "article",
+        "title": "职场冲突解决指南",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/363633006",
+        "estimated_hours": 2
+      },
+      {
+        "type": "video",
+        "title": "非暴力沟通实战课",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1G54y1L7SD",
+        "estimated_hours": 4
+      }
+    ]
+  },
+  {
+    "id": "presentation_skills",
+    "name": "演讲展示",
+    "category": "management",
+    "aliases": [
+      "公众演讲",
+      "汇报展示"
+    ],
+    "prerequisites": [
+      "communication_skills"
+    ],
+    "level": 2,
+    "description": "结构化呈现观点，通过演讲影响听众并推动决策",
+    "resources": [
+      {
+        "type": "video",
+        "title": "TED演讲技巧与公众表达",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1Z5411s7iq",
+        "estimated_hours": 8
+      },
+      {
+        "type": "article",
+        "title": "如何做好一场打动人心的演讲",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/358444601",
+        "estimated_hours": 2
+      },
+      {
+        "type": "video",
+        "title": "PPT设计与演讲展示",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1T7411K7bN",
+        "estimated_hours": 5
+      }
+    ]
+  },
+  {
+    "id": "team_management",
+    "name": "团队管理",
+    "category": "management",
+    "aliases": [
+      "带团队",
+      "团队领导"
+    ],
+    "prerequisites": [
+      "project_management"
+    ],
+    "level": 3,
+    "description": "组建、激励与发展团队，提升整体战斗力",
+    "resources": [
+      {
+        "type": "video",
+        "title": "团队管理实战：从0到1带团队",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1tE411p7Q3",
+        "estimated_hours": 10
+      },
+      {
+        "type": "article",
+        "title": "新晋管理者团队管理手册",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/337365194",
+        "estimated_hours": 3
+      },
+      {
+        "type": "repo",
+        "title": "developer-roadmap",
+        "source": "GitHub",
+        "url": "https://github.com/kamranahmedse/developer-roadmap",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "recruitment_interview",
+    "name": "招聘面试",
+    "category": "management",
+    "aliases": [
+      "人才招聘",
+      "面试技巧"
+    ],
+    "prerequisites": [
+      "team_management"
+    ],
+    "level": 3,
+    "description": "设计面试流程，识别并吸引高匹配度人才",
+    "resources": [
+      {
+        "type": "video",
+        "title": "招聘面试技巧与人才识别",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1i7411K7bN",
+        "estimated_hours": 6
+      },
+      {
+        "type": "article",
+        "title": "如何成为一个优秀的面试官",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/137825189",
+        "estimated_hours": 2
+      },
+      {
+        "type": "video",
+        "title": "STAR面试法实战",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1pE411p7Qa",
+        "estimated_hours": 3
+      }
+    ]
+  },
+  {
+    "id": "performance_management",
+    "name": "绩效管理",
+    "category": "management",
+    "aliases": [
+      "绩效考核",
+      "绩效评估"
+    ],
+    "prerequisites": [
+      "team_management",
+      "okr_management"
+    ],
+    "level": 3,
+    "description": "建立绩效体系，评估并提升团队与个人产出",
+    "resources": [
+      {
+        "type": "video",
+        "title": "绩效管理与OKR实战",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1dE411p7QC",
+        "estimated_hours": 8
+      },
+      {
+        "type": "article",
+        "title": "绩效管理全流程指南",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/369258963",
+        "estimated_hours": 3
+      },
+      {
+        "type": "video",
+        "title": "KPI与绩效考核设计",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1nE411p7QZ",
+        "estimated_hours": 5
+      }
+    ]
+  },
+  {
+    "id": "ecommerce_operations",
+    "name": "电商运营",
+    "category": "industry",
+    "aliases": [
+      "电商",
+      "电商平台运营"
+    ],
+    "prerequisites": [],
+    "level": 2,
+    "description": "理解电商业务链路，掌握流量、转化与复购运营方法",
+    "resources": [
+      {
+        "type": "video",
+        "title": "电商运营入门到精通",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1sE411p7QB",
+        "estimated_hours": 12
+      },
+      {
+        "type": "article",
+        "title": "电商运营核心方法论",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/369820461",
+        "estimated_hours": 3
+      },
+      {
+        "type": "video",
+        "title": "淘宝/京东运营实战",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1f7411K7yR",
+        "estimated_hours": 8
+      }
+    ]
+  },
+  {
+    "id": "privacy_compliance",
+    "name": "隐私合规",
+    "category": "industry",
+    "aliases": [
+      "数据合规",
+      "隐私保护"
+    ],
+    "prerequisites": [],
+    "level": 2,
+    "description": "理解隐私法规要求，确保产品数据处理合规",
+    "resources": [
+      {
+        "type": "article",
+        "title": "数据隐私与GDPR合规指南",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/348555123",
+        "estimated_hours": 2
+      },
+      {
+        "type": "doc",
+        "title": "GB/T个人信息安全规范",
+        "source": "国家标准全文公开系统",
+        "url": "https://www.gb688.cn/bzgk/gb/newGbInfo?hcno=EB88C4A84B6E66FCE05397BE0A0AB44A",
+        "estimated_hours": 4
+      },
+      {
+        "type": "article",
+        "title": "企业数据合规体系建设",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/366663523",
+        "estimated_hours": 3
+      }
+    ]
+  },
+  {
+    "id": "b2b_sales",
+    "name": "B2B销售",
+    "category": "industry",
+    "aliases": [
+      "企业销售",
+      "大客户销售"
+    ],
+    "prerequisites": [],
+    "level": 2,
+    "description": "面向企业客户的销售流程管理与商机转化",
+    "resources": [
+      {
+        "type": "video",
+        "title": "B2B销售与大客户管理",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1LW411Q7qV",
+        "estimated_hours": 8
+      },
+      {
+        "type": "article",
+        "title": "B2B销售全流程方法论",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/266653983",
+        "estimated_hours": 3
+      },
+      {
+        "type": "video",
+        "title": "解决方案销售实战",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1bW411n7fZ",
+        "estimated_hours": 6
+      }
+    ]
+  },
+  {
+    "id": "content_product",
+    "name": "内容产品",
+    "category": "industry",
+    "aliases": [
+      "内容运营",
+      "UGC/PGC"
+    ],
+    "prerequisites": [
+      "user_research"
+    ],
+    "level": 2,
+    "description": "设计内容生产、分发与消费的产品机制",
+    "resources": [
+      {
+        "type": "video",
+        "title": "内容产品设计与运营",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1yE411p7Qc",
+        "estimated_hours": 6
+      },
+      {
+        "type": "article",
+        "title": "内容型产品的设计逻辑",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/372883628",
+        "estimated_hours": 2
+      },
+      {
+        "type": "video",
+        "title": "UGC/PGC内容生态建设",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1t7411K7bN",
+        "estimated_hours": 5
+      }
+    ]
+  },
+  {
+    "id": "saas_business_model",
+    "name": "SaaS商业模式",
+    "category": "industry",
+    "aliases": [
+      "SaaS",
+      "订阅模式"
+    ],
+    "prerequisites": [
+      "business_model_design"
+    ],
+    "level": 2,
+    "description": "理解SaaS产品的订阅、续费与ARR增长逻辑",
+    "resources": [
+      {
+        "type": "article",
+        "title": "SaaS商业模式与ARR增长",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/369147258",
+        "estimated_hours": 3
+      },
+      {
+        "type": "repo",
+        "title": "developer-roadmap",
+        "source": "GitHub",
+        "url": "https://github.com/kamranahmedse/developer-roadmap",
+        "estimated_hours": 2
+      },
+      {
+        "type": "video",
+        "title": "SaaS产品设计方法论",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1S54y1G7Cg",
+        "estimated_hours": 6
+      }
+    ]
+  },
+  {
+    "id": "customer_success",
+    "name": "客户成功",
+    "category": "industry",
+    "aliases": [
+      "CSM",
+      "客户留存"
+    ],
+    "prerequisites": [
+      "b2b_sales"
+    ],
+    "level": 2,
+    "description": "通过主动服务帮助客户实现价值，提升留存与增购",
+    "resources": [
+      {
+        "type": "article",
+        "title": "客户成功管理体系搭建",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/363147852",
+        "estimated_hours": 2
+      },
+      {
+        "type": "video",
+        "title": "CSM客户成功实战课",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1aK4y1e7Zx",
+        "estimated_hours": 4
+      },
+      {
+        "type": "article",
+        "title": "SaaS客户成功与留存策略",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/361258741",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "fintech_basics",
+    "name": "金融科技基础",
+    "category": "industry",
+    "aliases": [
+      "FinTech",
+      "金融数字化"
+    ],
+    "prerequisites": [
+      "data_analysis"
+    ],
+    "level": 3,
+    "description": "理解金融业务与科技融合的核心场景与监管要求",
+    "resources": [
+      {
+        "type": "article",
+        "title": "金融科技入门与核心场景",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/358888901",
+        "estimated_hours": 3
+      },
+      {
+        "type": "video",
+        "title": "FinTech基础与数字货币",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1Fa4y1Y7mE",
+        "estimated_hours": 6
+      },
+      {
+        "type": "article",
+        "title": "金融业务与科技融合",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/348884491",
+        "estimated_hours": 3
+      }
+    ]
+  },
+  {
+    "id": "platform_governance",
+    "name": "平台治理",
+    "category": "industry",
+    "aliases": [
+      "内容治理",
+      "风控策略"
+    ],
+    "prerequisites": [
+      "content_product"
+    ],
+    "level": 3,
+    "description": "建立规则与机制，维护平台生态健康与用户体验",
+    "resources": [
+      {
+        "type": "article",
+        "title": "平台治理与内容风控策略",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/137825189",
+        "estimated_hours": 2
+      },
+      {
+        "type": "video",
+        "title": "内容平台审核与治理机制",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1bt411g7jH",
+        "estimated_hours": 5
+      },
+      {
+        "type": "article",
+        "title": "社区治理与规则设计",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/266653983",
+        "estimated_hours": 2
+      }
+    ]
+  },
+  {
+    "id": "supply_chain_digital",
+    "name": "供应链数字化",
+    "category": "industry",
+    "aliases": [
+      "数字供应链",
+      "供应链系统"
+    ],
+    "prerequisites": [
+      "saas_business_model"
+    ],
+    "level": 3,
+    "description": "运用数字化手段优化供应链计划、采购与履约效率",
+    "resources": [
+      {
+        "type": "article",
+        "title": "供应链数字化转型指南",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/377026265",
+        "estimated_hours": 3
+      },
+      {
+        "type": "video",
+        "title": "数字化供应链管理系统",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1Z5411s7iq",
+        "estimated_hours": 5
+      },
+      {
+        "type": "article",
+        "title": "智能供应链与物流优化",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/365789890",
+        "estimated_hours": 3
+      }
+    ]
+  },
+  {
+    "id": "international_expansion",
+    "name": "国际化拓展",
+    "category": "industry",
+    "aliases": [
+      "出海",
+      "全球化"
+    ],
+    "prerequisites": [
+      "business_model_design"
+    ],
+    "level": 3,
+    "description": "制定并执行产品进入海外市场的本地化与增长策略",
+    "resources": [
+      {
+        "type": "article",
+        "title": "企业出海与国际化拓展策略",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/363633006",
+        "estimated_hours": 3
+      },
+      {
+        "type": "video",
+        "title": "产品出海实战：本地化与增长",
+        "source": "bilibili",
+        "url": "https://www.bilibili.com/video/BV1G54y1L7SD",
+        "estimated_hours": 6
+      },
+      {
+        "type": "article",
+        "title": "全球化运营与跨境合规",
+        "source": "知乎",
+        "url": "https://zhuanlan.zhihu.com/p/358444601",
+        "estimated_hours": 2
+      }
+    ]
+  }
+]

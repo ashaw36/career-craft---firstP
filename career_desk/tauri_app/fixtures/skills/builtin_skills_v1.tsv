@@ -1,0 +1,52 @@
+id	name	category	level	prerequisites
+user_research	用户研究	product_management	1	
+requirement_analysis	需求分析	product_management	2	user_research
+prd_writing	PRD撰写	product_management	2	requirement_analysis
+user_persona	用户画像	product_management	2	user_research
+competitive_analysis	竞品分析	product_management	2	user_research
+mvp_validation	MVP验证	product_management	2	requirement_analysis
+agile_development	敏捷开发	product_management	2	
+cross_team_collaboration	跨团队协同	product_management	2	agile_development
+data_driven_decision	数据驱动决策	product_management	2	data_analysis
+okr_management	OKR管理	product_management	2	
+ab_testing	A/B测试	product_management	3	data_driven_decision
+growth_strategy	增长策略	product_management	3	data_driven_decision,ab_testing
+roadmap_planning	Roadmap规划	product_management	3	requirement_analysis,prd_writing
+business_model_design	商业模式设计	product_management	3	competitive_analysis
+product_lifecycle	产品生命周期	product_management	3	roadmap_planning
+python	Python	technical	1	
+sql	SQL	technical	1	
+git_collaboration	Git协作	technical	1	
+data_analysis	数据分析	technical	2	sql,python
+api_design	API设计	technical	2	python
+docker	Docker	technical	2	
+kubernetes	Kubernetes	technical	3	docker
+frontend_basics	前端基础	technical	2	
+automated_testing	自动化测试	technical	2	python
+data_visualization	数据可视化	technical	2	data_analysis
+cloud_computing_basics	云计算基础	technical	2	docker
+system_architecture	系统架构	technical	3	api_design
+machine_learning_basics	机器学习基础	technical	3	python,data_analysis
+etl_pipeline	ETL流程	technical	3	sql,data_analysis
+llm_applications	大模型应用	technical	3	python,machine_learning_basics
+performance_optimization	性能优化	technical	3	system_architecture
+time_management	时间管理	management	1	
+communication_skills	沟通表达	management	1	
+project_management	项目管理	management	2	
+upward_management	向上管理	management	2	
+priority_management	优先级排序	management	2	time_management
+conflict_resolution	冲突解决	management	2	communication_skills
+presentation_skills	演讲展示	management	2	communication_skills
+team_management	团队管理	management	3	project_management
+recruitment_interview	招聘面试	management	3	team_management
+performance_management	绩效管理	management	3	team_management,okr_management
+ecommerce_operations	电商运营	industry	2	
+privacy_compliance	隐私合规	industry	2	
+b2b_sales	B2B销售	industry	2	
+content_product	内容产品	industry	2	user_research
+saas_business_model	SaaS商业模式	industry	2	business_model_design
+customer_success	客户成功	industry	2	b2b_sales
+fintech_basics	金融科技基础	industry	3	data_analysis
+platform_governance	平台治理	industry	3	content_product
+supply_chain_digital	供应链数字化	industry	3	saas_business_model
+international_expansion	国际化拓展	industry	3	business_model_design

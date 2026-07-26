@@ -1,0 +1,28 @@
+debug: false
+log_level: INFO
+llm_providers:
+- name: tongyi
+  api_key: ''
+  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+  default_model: qwen-max
+  fallback_models:
+  - qwen-plus
+  - qwen-turbo
+  timeout: 30
+  max_retries: 3
+  enabled: true
+- name: openai
+  api_key: ''
+  base_url: null
+  default_model: gpt-4o
+  fallback_models:
+  - gpt-4o-mini
+  timeout: 30
+  max_retries: 3
+  enabled: false
+default_llm_provider: tongyi
+crawler_headless: true
+crawler_stealth: true
+crawler_request_delay_ms: 2000
+resume_max_experiences: 5
+resume_fit_score_threshold: 0.3

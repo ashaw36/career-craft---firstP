@@ -1,0 +1,37 @@
+# {{ name }}
+
+{% if identity_statement %}
+{{ identity_statement }}
+{% endif %}
+
+{% if career_narrative %}
+{{ career_narrative }}
+{% endif %}
+
+---
+
+## 经历
+
+{% for exp in experiences %}
+**{{ exp.title }}** @ {{ exp.organization or 'N/A' }}  
+{{ exp.period }}
+
+{% if exp.description %}
+{{ exp.description }}
+{% endif %}
+
+{% if exp.achievements %}
+{% for ach in exp.achievements %}
+- {{ ach }}
+{% endfor %}
+{% endif %}
+
+{% if exp.skills %}
+{{ exp.skills | join(' · ') }}
+{% endif %}
+
+{% endfor %}
+
+---
+
+{{ generated_at }}

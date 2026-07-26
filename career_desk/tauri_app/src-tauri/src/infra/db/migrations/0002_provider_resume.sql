@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS provider_configs (
+  name TEXT PRIMARY KEY,
+  base_url TEXT NOT NULL,
+  default_model TEXT NOT NULL,
+  credential_target TEXT NOT NULL,
+  enabled INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

@@ -1,0 +1,26 @@
+# CareerCraft Agent — LLM 供应商配置模板
+# 复制此文件为 ~/.careercraft/config.yaml 或直接在 GUI 中配置
+
+llm_providers:
+  - name: tongyi
+    api_key: ""
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    default_model: "qwen-max"
+    fallback_models:
+      - "qwen-plus"
+      - "qwen-turbo"
+    timeout: 30
+    max_retries: 3
+    enabled: true
+
+  - name: openai
+    api_key: ""
+    base_url: null
+    default_model: "gpt-4o"
+    fallback_models:
+      - "gpt-4o-mini"
+    timeout: 30
+    max_retries: 3
+    enabled: false
+
+default_llm_provider: "tongyi"

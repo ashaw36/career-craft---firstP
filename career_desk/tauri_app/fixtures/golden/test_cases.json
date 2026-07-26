@@ -1,0 +1,10 @@
+{
+  "DB-GOLD-001":{"requirements":["CC-FR-023","CC-NFR-003"],"assert":["9 tables","DDL exact","FK check clean","row values and JSON canonical hashes exact"]},
+  "FIT-001":{"requirements":["CC-FR-005"],"input":"legacy_rows experience+persona","expected":{"score":1.0}},
+  "FIT-002":{"requirements":["CC-FR-005"],"input":"empty capability weights","expected":{"score":0.0}},
+  "FIT-003":{"requirements":["CC-FR-005"],"input":"unmatched skills","expected":{"score":0.0}},
+  "FIT-004":{"requirements":["CC-FR-005"],"input":{"override":120},"expected":{"stored":100,"userOverridden":true}},
+  "FIT-005":{"requirements":["CC-FR-005"],"assert":"manual override survives recalculation"},
+  "FIT-006":{"requirements":["CC-FR-005"],"assert":"descending score order is stable"},
+  "API-CONTRACT-001..033":{"requirements":["CC-FR-001..015","CC-FR-021"],"assert":["success envelope","stable domain error","invalid input rejected before use case","Chinese UTF-8 round-trip","no stack trace"]}
+}

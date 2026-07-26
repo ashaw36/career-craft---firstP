@@ -1,0 +1,26 @@
+{
+  "contractVersion":"2.0.0",
+  "extends":"../v1/commands.json",
+  "commands":[
+    ["listCustomSkills",["ownerId"],"CC-FR-014","SKILL-007"],
+    ["createCustomSkill",["skill"],"CC-FR-014","SKILL-008"],
+    ["updateCustomSkill",["skill"],"CC-FR-014","SKILL-009"],
+    ["deleteCustomSkill",["ownerId","skillId"],"CC-FR-014","SKILL-010"],
+    ["simulateSkillWhatIf",["requiredSkills","currentSkills","hypotheticalSkills"],"CC-FR-017","WHATIF-001"],
+    ["updateLearningProgress",["pathId","itemId","status","completionNote"],"CC-FR-016","LEARN-009"],
+    ["completeLearningToExperience",["itemId","experienceId"],"CC-FR-016","LEARN-013"],
+    ["resetFitScore",["personaId","experienceId"],"CC-FR-005","FIT-005"],
+    ["deleteProvider",["name"],"CC-FR-021","SEC-004"],
+    ["openExternalUrl",["token"],"CC-FR-022","SEC-006"],
+    ["collectJobUrl",["url"],"CC-FR-020","SEC-004/006"],
+    ["listResumeVersions",["personaId"],"CC-FR-018","RES-015"],
+    ["diffResumeVersions",["leftVersionId","rightVersionId"],"CC-FR-018","RES-018"],
+    ["restoreResumeVersion",["versionId"],"CC-FR-007","RES-014"],
+    ["startBackgroundTask",["operation","payload"],"CC-NFR-002","TASK-001"],
+    ["getBackgroundTask",["taskId"],"CC-NFR-002","TASK-002"],
+    ["cancelBackgroundTask",["taskId"],"CC-NFR-002","TASK-003"],
+    ["listBackups",[],"CC-FR-023","DB-MIG-004"],
+    ["createBackup",[],"CC-FR-023","DB-MIG-004"],
+    ["restoreBackup",["name"],"CC-FR-023","DB-MIG-005"]
+  ]
+}

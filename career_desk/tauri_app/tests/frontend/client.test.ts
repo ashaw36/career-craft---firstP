@@ -1,0 +1,12 @@
+import{describe,expect,it,vi}from"vitest";
+import{CareerCraftClient}from"../../src/api/client";
+import{commandSlots}from"../../src/api/contracts";
+import type{CommandTransport}from"../../src/api/transport";
+
+describe("typed client",()=>{
+ it("registers all v1+v2+v3 commands",()=>expect(commandSlots).toHaveLength(61));
+ it("passes exact parameters",async()=>{const call=vi.fn().mockResolvedValue({success:true,data:{}}),client=new CareerCraftClient({call}as CommandTransport);await client.saveExperience({title:"x"});await client.deleteExperience("e1",3);await client.parseJD("Rust");expect(call).toHaveBeenNthCalledWith(1,"save_experience",{title:"x"});expect(call).toHaveBeenNthCalledWith(2,"delete_experience",{experienceId:"e1",version:3});expect(call).toHaveBeenNthCalledWith(3,"parse_jd",{jdText:"Rust"})});
+ it("calls resume match learning settings",async()=>{const call=vi.fn().mockResolvedValue({success:false,error:{code:"UNAVAILABLE",message:"unsupported"}}),client=new CareerCraftClient({call}as CommandTransport);await client.generateResume("p","classic");await client.previewResume("p","technical");await client.matchJob("j","p");await client.getLearningPath("SQL");await client.testLLMConnection();expect(call).toHaveBeenCalledTimes(5)});
+ it("sends structured tuning enum and exact confirmation credentials",async()=>{const call=vi.fn().mockResolvedValue({success:true,data:{}}),client=new CareerCraftClient({call}as CommandTransport);await client.chatRefineResume("p","优化一下","job_alignment");await client.chatRefineResume("p","优化一下","job_alignment",true,"base","proposal","hash");expect(call).toHaveBeenNthCalledWith(1,"chat_refine_resume",{personaId:"p",instruction:"优化一下",instructionType:"job_alignment"});expect(call).toHaveBeenNthCalledWith(2,"chat_refine_resume",{personaId:"p",instruction:"优化一下",confirm:true,baseVersionId:"base",proposalId:"proposal",contentHash:"hash"})});
+ it("types disabled updater commands and preserves UNAVAILABLE",async()=>{const unavailable={success:false as const,error:{code:"UNAVAILABLE" as const,message:"updater feature is disabled"}},call=vi.fn().mockResolvedValue(unavailable),client=new CareerCraftClient({call}as CommandTransport);await expect(client.checkUpdate()).resolves.toEqual(unavailable);await expect(client.downloadUpdate()).resolves.toEqual(unavailable);await expect(client.installUpdate()).resolves.toEqual(unavailable);expect(call.mock.calls).toEqual([["check_update",undefined],["download_update",undefined],["install_update",undefined]])});
+});

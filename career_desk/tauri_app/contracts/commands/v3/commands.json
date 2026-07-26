@@ -1,0 +1,73 @@
+{
+  "contractVersion": "3.0.0",
+  "extends": "../v2/commands.json",
+  "topLevelCommandsAdded": [["previewResume", ["personaId", "template"], "CC-FR-006", "RES-PREVIEW-001"],["getJobStatusEvents",["matchId"],"CC-FR-011","JOB-AUDIT-001"],["checkUpdate",[],"CC-FR-024","UPD-001"],["downloadUpdate",[],"CC-FR-024","UPD-002"],["installUpdate",[],"CC-FR-024","UPD-003"],["exportPortableBackup",["destinationPath","acknowledgeUnencrypted"],"CC-SEC-006","PORTABLE-001"],["inspectPortableBackup",["archivePath"],"CC-SEC-006","PORTABLE-002"],["importPortableBackup",["archivePath","confirmed"],"CC-SEC-006","PORTABLE-003"]],
+  "topLevelCommandCount": 61,
+  "backgroundOperations": {
+    "structure_experience": {
+      "request": {
+        "required": ["rawDescription"],
+        "properties": {
+          "rawDescription": "string(1..100000)",
+          "personaId": "string?"
+        }
+      },
+      "response": {
+        "required": ["draft", "promptVersion", "provider", "model", "warnings"],
+        "additionalProperties": false,
+        "draft": {
+          "required": ["type", "title", "organization", "startDate", "endDate", "rawDescription", "structuredAchievements", "skillsDemonstrated", "industryTags", "educationLevel", "status"],
+          "additionalProperties": false,
+          "type": "work|project|education|certification",
+          "title": "string",
+          "organization": "string|null",
+          "startDate": "ISO-date|null",
+          "endDate": "ISO-date|null",
+          "rawDescription": "exact request.rawDescription",
+          "structuredAchievements": "string[1..50]",
+          "skillsDemonstrated": "string[1..50]",
+          "industryTags": "string[]",
+          "educationLevel": "none|high_school|associate|bachelor|master|doctorate|other",
+          "status": "draft"
+        },
+        "promptVersion": "string",
+        "provider": "string",
+        "model": "string",
+        "warnings": "string[]",
+        "cacheHit": "boolean"
+      },
+      "sideEffects": "none",
+      "requirement": "CC-FR-001",
+      "testId": "EXP-STRUCT-001"
+    }
+  },
+  "reservedV3": {
+    "exportResumePDF": {"optionalRequestFields": ["versionId"]}
+  },
+  "responseExtensions": {
+    "previewResume": {"required":["personaId","template","markdown","contentHash","selectedExperienceIds","fitScores","warnings"],"sideEffects":"none"},
+    "exportResumePDF": {"required":["pdfBase64","filename","versionId","template","contentHash"],"optionalRequestFields":["versionId"]},
+    "getBackgroundTask": {"events":"StreamEvent[]","progress":"0|5|100|null","progressPolicy":"null while token count total is unknowable; terminal success is 100"},
+    "chatRefineResume": {"promptVersion":"resume-tuning-v1","cachePolicy":"no-store","previewRequestRequired":["personaId","instructionType","instruction"],"confirmRequestRequired":["personaId","instruction","confirm","baseVersionId","proposalId","contentHash"],"instructionType":"leadership|metrics|concise|technical_depth|job_alignment|general","instructionPolicy":"structured instructionType is authoritative and separate from free-text instruction; invalid or missing types are rejected without keyword inference","previewRequired":["proposalId","contentHash","baseVersionId","refinedSummary"],"confirmRequired":["proposalId","contentHash","baseVersionId"],"proposalPolicy":"server-side, 600s TTL, single-use, bound to baseVersionId and contentHash; confirm never calls provider"},
+    "completeLearningToExperience": {"requestRequired":["itemId","experienceId","title","organization","rawDescription"],"responseRequired":["experienceId","converted","conversionId","sourceSnapshot","draft"],"sourceSnapshotRequired":["itemId","pathId","skillId","title","completionNote"],"draftRequired":["id","version","status","title","organization","rawDescription"],"lifecycle":"creates draft v1 transactionally; path or experience deletion preserves a nullable-link conversion source snapshot"},
+    "getJobStatusEvents": {"requestRequired":["matchId"],"itemType":"JobStatusEventDto","itemRequired":["id","matchId","fromStatus","toStatus","changedAt"],"ordering":"id ASC","initialEvent":"fromStatus null","deletePolicy":"events cascade with job match"},
+    "updateMatchStatus": {"requestRequired":["matchId","status","expectedVersion"],"responseType":"JobMatchStatusDto","responseRequired":["id","trackingStatus","eventId","version"],"concurrency":"CAS update and audit append in one transaction; stale expectedVersion is CONFLICT"},
+    "getSkillGraph|searchSkills": {"itemType":"SkillDto","itemRequired":["skillId","name","category","description","aliases","prerequisiteSkillIds","level","resources"],"additionalProperties":false,"graphPolicy":"51 built-ins; normalized unique aliases; no self/cyclic/missing prerequisite references"},
+    "getSkillResources": {"itemType":"LearningResourceDto","itemRequired":["resourceId","skillId","kind","title","source","url","estimatedHours"],"additionalProperties":false,"catalogPolicy":"at least 3 independently normalized URL-deduplicated HTTP(S) resources per built-in skill; insufficient trusted catalog is VALIDATION"},
+    "getLearningPath": {"requestRequired":["skill"],"responseType":"LearningPathDto","responseRequired":["pathId","personaId","targetGap","skillId","sourceType","guidance","context","status","version","items"],"itemType":"LearningItemDto","itemRequired":["itemId","skillId","title","resourceUrl","resourceKind","estimatedHours","status","source","version","completionNote","convertedExperienceId"],"additionalProperties":false,"persistence":"learning_items is the normalized truth source; context and typed items persist transactionally"},
+    "getLearningPathsBySource": {"optionalRequestFields":["sourceType"],"sourceTypes":["skill_graph","job_gap","manual","llm_with_skill_graph"]},
+    "updateLearningProgress": {"requestRequired":["pathId","itemId","status","expectedVersion"],"completionRequiredWhenCompleted":"completionNote","responseRequired":["itemId","status","version","pathVersion","completionNote"],"concurrency":"optimistic expectedVersion; item and path version increment transactionally"},
+    "checkUpdate|downloadUpdate|installUpdate": {"feature":"updater","transport":"tauri-plugin-updater v2 with pinned public key; plugin verifies signed artifacts before staging","states":["idle","checking","available","downloading","verifying","staged","applying","succeeded","failed","rolled_back"],"disabledBehavior":"UNAVAILABLE when production updater feature is disabled","privateKeyPolicy":"never stored in repository or application"},
+    "exportPortableBackup": {"requestRequired":["destinationPath","acknowledgeUnencrypted"],"ackPolicy":"acknowledgeUnencrypted must be true","responseRequired":["manifest","warning"],"encrypted":false},
+    "inspectPortableBackup": {"requestRequired":["archivePath"],"responseRequired":["manifest","recordCounts","appVersion","schemaVersion","dryRun","pendingRestore","safetyBackup"],"dryRun":true,"mutation":"does not modify the current user database; a temporary candidate is written and removed"},
+    "importPortableBackup": {"requestRequired":["archivePath","confirmed"],"confirmPolicy":"confirmed must be true","responseRequired":["manifest","recordCounts","appVersion","schemaVersion","dryRun","pendingRestore","safetyBackup","restartRequired"],"staging":"atomic restore-pending; current DB safety backup first"},
+    "structureExperienceCache": {"ttlSeconds":604800,"keyDimensions":["operation","promptVersion","provider","model","temperature","maxOutputTokens","messageRolesAndContent"],"writePolicy":"successful complete generation only","concurrency":"single-flight plus unique cache key","storagePolicy":"hash key and response only; no prompt body, API key, or secret","hitField":"cacheHit"},
+    "getExperiences|saveExperience": {"industryTags":"string[]","educationLevel":"none|high_school|associate|bachelor|master|doctorate|other"},
+    "parseJD|listJobs": {"industryTags":"string[]","educationLevels":"(high_school|associate|bachelor|master|doctorate|other)[]"},
+    "matchJob|getJobMatches.items.MatchDto": {
+      "required": ["id", "personaId", "jobDescId", "matchScore", "matchedSkills", "missingSkills", "trackingStatus", "scoreBreakdown", "evidenceSources", "updatedAt", "version"],
+      "evidenceSources": ["jobIndustry", "jobEducation", "candidateIndustry", "candidateEducation", "candidateSkills", "candidateExperience"],
+      "ordering": "updatedAt DESC,id DESC"
+    }
+  }
+}

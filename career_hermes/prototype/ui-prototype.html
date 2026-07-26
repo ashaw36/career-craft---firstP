@@ -1,0 +1,2845 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareerCraft Agent — 职业智能体</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="qwebchannel.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <style>
+    /* ─── Linear Design System Tokens ─── */
+    :root {
+      --bg-canvas: #08090a;
+      --bg-panel: #0f1011;
+      --bg-surface: #191a1b;
+      --bg-elevated: #28282c;
+      --text-primary: #f7f8f8;
+      --text-secondary: #d0d6e0;
+      --text-tertiary: #8a8f98;
+      --text-quaternary: #62666d;
+      --accent-brand: #5e6ad2;
+      --accent-violet: #7170ff;
+      --accent-hover: #828fff;
+      --border-subtle: rgba(255,255,255,0.05);
+      --border-standard: rgba(255,255,255,0.08);
+      --border-solid: #23252a;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 9999px;
+      --shadow-elevated: rgba(0,0,0,0.4) 0px 2px 4px;
+      --shadow-dialog: rgba(0,0,0,0) 0px 8px 2px, rgba(0,0,0,0.01) 0px 5px 2px, rgba(0,0,0,0.04) 0px 3px 2px, rgba(0,0,0,0.07) 0px 1px 1px, rgba(0,0,0,0.08) 0px 0px 1px;
+    }
+    /* ─── Icons ─── */
+    .icon svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+    .nav-icon { width: 18px; height: 18px; opacity: 0.7; display: flex; align-items: center; justify-content: center; }
+    .nav-item.active .nav-icon { opacity: 1; }
+    .exp-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.05); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .exp-icon svg { width: 18px; height: 18px; }
+
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+      font-feature-settings: "cv01", "ss03";
+      background: var(--bg-canvas);
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Layout ─── */
+    .app {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* ─── Sidebar ─── */
+    .sidebar {
+      width: 220px;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 8px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 16px;
+    }
+
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent-brand), var(--accent-violet));
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .brand-text {
+      font-size: 15px;
+      font-weight: 590;
+      letter-spacing: -0.165px;
+      color: var(--text-primary);
+    }
+
+    .brand-version {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--text-quaternary);
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .nav-section {
+      margin-bottom: 20px;
+    }
+
+    .nav-label {
+      font-size: 11px;
+      font-weight: 510;
+      color: var(--text-quaternary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0 8px 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      color: var(--text-tertiary);
+      font-size: 14px;
+      font-weight: 510;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-bottom: 2px;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.04);
+      color: var(--text-secondary);
+    }
+
+    .nav-item.active {
+      background: rgba(255,255,255,0.06);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      width: 3px;
+      height: 20px;
+      background: var(--accent-violet);
+      border-radius: 0 2px 2px 0;
+    }
+
+
+
+    /* ─── Main Content ─── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .header {
+      height: 52px;
+      background: var(--bg-canvas);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+    }
+
+    .header-title {
+      font-size: 15px;
+      font-weight: 590;
+      color: var(--text-primary);
+      letter-spacing: -0.165px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* ─── Buttons ─── */
+    .btn {
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 510;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-ghost {
+      background: rgba(255,255,255,0.02);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-solid);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-primary);
+    }
+
+    .btn-primary {
+      background: var(--accent-brand);
+      color: #fff;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    /* ─── Content Area ─── */
+    .content {
+      flex: 1;
+      overflow: auto;
+      padding: 24px;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ─── Cards ─── */
+    .card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border-standard);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      transition: all 0.15s ease;
+    }
+
+    .card:hover {
+      background: rgba(255,255,255,0.03);
+      border-color: rgba(255,255,255,0.12);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 590;
+      color: var(--text-primary);
+      letter-spacing: -0.165px;
+    }
+
+    .card-meta {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
+
+    .card-body {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ─── Grid ─── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* ─── Experience List ─── */
+    .exp-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .exp-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .exp-item:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: var(--border-standard);
+    }
+
+    .exp-item.selected {
+      background: rgba(94,106,210,0.08);
+      border-color: rgba(94,106,210,0.3);
+    }
+
+    .exp-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.05); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    .exp-info { flex: 1; min-width: 0; overflow: hidden; }
+
+    .exp-title {
+      font-size: 14px;
+      font-weight: 510;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .exp-sub {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .exp-tags {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    /* ─── Tags / Pills ─── */
+    .pill {
+      padding: 2px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-weight: 510;
+      border: 1px solid var(--border-solid);
+      color: var(--text-tertiary);
+      background: transparent;
+    }
+
+    .pill-accent {
+      background: rgba(94,106,210,0.15);
+      border-color: rgba(94,106,210,0.3);
+      color: var(--accent-violet);
+    }
+
+    .pill-success {
+      background: rgba(16,185,129,0.15);
+      border-color: rgba(16,185,129,0.3);
+      color: var(--success);
+    }
+
+    /* ─── Form Elements ─── */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 510;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+      width: 100%;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border-standard);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.15s ease;
+      outline: none;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+      border-color: var(--accent-brand);
+      box-shadow: 0 0 0 3px rgba(94,106,210,0.15);
+    }
+
+    .form-textarea {
+      min-height: 80px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .form-select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238a8f98' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+
+    .form-select option {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+    }
+
+    /* ─── Split Panel ─── */
+    .split {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 20px;
+      height: calc(100vh - 120px);
+    }
+
+    .split-left {
+      overflow: auto;
+    }
+
+    .split-right {
+      overflow: auto;
+    }
+
+    /* ─── Resume Preview ─── */
+    .resume-preview {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-standard);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+    }
+
+    .resume-preview h1 {
+      font-size: 28px;
+      font-weight: 510;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    .resume-preview h2 {
+      font-size: 18px;
+      font-weight: 590;
+      color: var(--text-primary);
+      margin: 24px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .resume-preview h3 {
+      font-size: 15px;
+      font-weight: 590;
+      color: var(--text-primary);
+      margin: 16px 0 8px;
+    }
+
+    .resume-preview blockquote {
+      border-left: 2px solid var(--accent-brand);
+      padding-left: 16px;
+      margin: 12px 0;
+      color: var(--text-tertiary);
+      font-style: italic;
+    }
+
+    .resume-preview ul {
+      margin: 8px 0 8px 20px;
+    }
+
+    .resume-preview li {
+      margin: 4px 0;
+    }
+
+    .resume-preview code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: rgba(255,255,255,0.05);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--accent-violet);
+    }
+
+    /* ─── Skill Modal ─── */
+    .skill-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 10001;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .skill-modal-overlay.active {
+      display: flex;
+    }
+    .skill-modal {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-standard);
+      border-radius: var(--radius-lg);
+      max-width: 560px;
+      width: 100%;
+      max-height: 80vh;
+      overflow: auto;
+      padding: 24px;
+      position: relative;
+    }
+    .skill-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+    }
+    .skill-modal-close:hover {
+      color: var(--text-primary);
+    }
+    .skill-modal-title {
+      font-size: 18px;
+      font-weight: 590;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      padding-right: 32px;
+    }
+    .skill-modal-tag {
+      display: inline-block;
+      margin-bottom: 14px;
+    }
+    .skill-modal-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+    .skill-modal-section {
+      margin-bottom: 16px;
+    }
+    .skill-modal-section-title {
+      font-size: 12px;
+      font-weight: 510;
+      color: var(--text-quaternary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .skill-modal-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .skill-modal-pills .pill {
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .skill-modal-pills .pill:hover {
+      border-color: var(--accent-brand);
+      color: var(--accent-violet);
+    }
+    .skill-modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .skill-modal-link {
+      color: var(--accent-violet);
+      font-size: 13px;
+      text-decoration: none;
+    }
+    .skill-modal-link:hover {
+      text-decoration: underline;
+    }
+
+    /* ─── Resource Card Link ─── */
+    .resource-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--accent-violet);
+      font-size: 13px;
+      text-decoration: none;
+      margin-top: 8px;
+    }
+    .resource-link:hover {
+      text-decoration: underline;
+    }
+    .resource-link.search {
+      color: var(--text-tertiary);
+    }
+    .resource-link.search:hover {
+      color: var(--accent-violet);
+    }
+
+    .match-card {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      padding: 20px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border-standard);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+    }
+
+    .match-info { flex: 1; }
+
+    .match-title {
+      font-size: 15px;
+      font-weight: 590;
+      color: var(--text-primary);
+    }
+
+    .match-company {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+
+    .match-skills {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      padding: 20px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 510;
+      color: var(--text-primary);
+      letter-spacing: -1px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ─── Welcome Page ─── */
+    .welcome-hero {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .welcome-hero h1 {
+      font-size: 48px;
+      font-weight: 510;
+      letter-spacing: -1.056px;
+      line-height: 1.1;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+
+    .welcome-hero p {
+      font-size: 18px;
+      color: var(--text-tertiary);
+      max-width: 560px;
+      margin: 0 auto 32px;
+      line-height: 1.6;
+    }
+
+    .welcome-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    /* ─── Scrollbar ─── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-solid); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-quaternary); }
+
+    /* ─── Section Title ─── */
+    .section-title {
+      font-size: 20px;
+      font-weight: 590;
+      color: var(--text-primary);
+      letter-spacing: -0.24px;
+      margin-bottom: 16px;
+    }
+
+    .section-subtitle {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      margin-bottom: 20px;
+    }
+
+    /* ─── Toolbar ─── */
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+
+    .toolbar-spacer { flex: 1; }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 900px) {
+      .split { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .sidebar { width: 60px; padding: 16px 8px; }
+      .brand-text, .nav-label, .nav-item span { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">C</div>
+        <span class="brand-text">CareerCraft</span>
+        <span class="brand-version">v0.1</span>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">核心</div>
+        <button class="nav-item active" onclick="switchPage('welcome')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+          <span>欢迎</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('experiences')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
+          <span>经历库</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('personas')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+          <span>角色档案</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('resume')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+          <span>简历生成</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('jobs')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+          <span>岗位匹配</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('skills')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>
+          <span>技能图谱</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('learning')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+          <span>学习路径</span>
+        </button>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">系统</div>
+        <button class="nav-item" onclick="switchPage('settings')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+          <span>设置</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="header">
+        <span class="header-title" id="page-title">欢迎</span>
+        <div class="header-actions">
+        </div>
+      </header>
+
+      <div class="content">
+        <!-- Welcome Page -->
+        <div class="page active" id="page-welcome">
+          <div class="welcome-hero">
+            <h1>CareerCraft Agent</h1>
+            <p>角色档案驱动的职业智能体。管理经历、构建角色、生成简历、匹配岗位 — 全部在一个工作流中完成。</p>
+            <div class="welcome-actions">
+              <button class="btn btn-primary" onclick="switchPage('experiences')">开始录入经历</button>
+              <button class="btn btn-ghost" onclick="switchPage('personas')">查看角色档案</button>
+            </div>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="stat-value" id="stat-experiences">—</div>
+              <div class="stat-label">已录入经历</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-personas">—</div>
+              <div class="stat-label">角色档案</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-matches">—</div>
+              <div class="stat-label">岗位匹配</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-paths">—</div>
+              <div class="stat-label">学习路径</div>
+            </div>
+          </div>
+
+          <div id="welcome-empty-guide" style="display: none; background: var(--bg-tertiary); background: var(--bg-tertiary, var(--bg-surface)); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 24px; margin-top: -8px;">
+            <div style="font-size: 20px; font-weight: 590; color: var(--text-primary); letter-spacing: -0.24px; margin-bottom: 8px;">👋 欢迎使用 CareerCraft Agent</div>
+            <div style="font-size: 14px; color: var(--text-tertiary); line-height: 1.6; margin-bottom: 18px;">你的经历库还是空的，录入经历后即可生成简历和匹配岗位</div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="switchPage('experiences')">✅ 录入第一条经历</button>
+              <button class="btn btn-ghost" onclick="switchPage('experiences')">📄 批量导入</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Experiences Page -->
+        <div class="page" id="page-experiences">
+          <div class="split">
+            <div class="split-left">
+              <div class="toolbar">
+                <span class="section-title">经历库</span>
+                <div class="toolbar-spacer"></div>
+                <button class="btn btn-ghost btn-sm" onclick="toggleImportPanel()">批量导入</button>
+                <button class="btn btn-primary btn-sm" onclick="newExperience()">+ 新建</button>
+              </div>
+              <div id="import-panel" style="display: none; margin-bottom: 16px; padding: 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-standard); border-radius: var(--radius-md);">
+                <div class="form-group">
+                  <label class="form-label">格式</label>
+                  <select class="form-select" id="import-format" style="width: 160px;">
+                    <option value="markdown">Markdown</option>
+                    <option value="text">纯文本</option>
+                    <option value="json">JSON</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">粘贴内容</label>
+                  <textarea class="form-textarea" id="import-content" rows="6" placeholder="在此粘贴经历内容..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">或选择文件 (.md, .txt, .json, .pdf, .doc, .docx)</label>
+                  <input type="file" id="import-file" accept=".md,.txt,.json,.pdf,.doc,.docx" style="color: var(--text-secondary); font-size: 13px;" onchange="handleImportFile(this)">
+                </div>
+                <div class="toolbar" style="margin-bottom: 0;">
+                  <button class="btn btn-primary btn-sm" onclick="submitImport()">开始导入</button>
+                  <button class="btn btn-ghost btn-sm" onclick="toggleImportPanel()">取消</button>
+                </div>
+              </div>
+              <div class="exp-list" id="exp-list-container">
+                <div style="color: var(--text-tertiary); padding: 24px; text-align: center;">加载中...</div>
+              </div>
+            </div>
+
+            <div class="split-right" id="exp-detail-panel">
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <div class="card-title" id="exp-card-title">请选择经历</div>
+                    <div class="card-meta" id="exp-card-meta"></div>
+                  </div>
+                  <div class="exp-tags" id="exp-card-tags"></div>
+                </div>
+                <div class="card-body">
+                  <p id="exp-card-body"></p>
+                </div>
+              </div>
+
+              <div style="margin-top: 16px;">
+                <input type="hidden" id="exp-form-id">
+                <div class="form-group">
+                  <label class="form-label">项目名称</label>
+                  <input class="form-input" id="exp-form-title" type="text" placeholder="项目名称">
+                </div>
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label class="form-label">职位</label>
+                    <input class="form-input" id="exp-form-role" type="text" placeholder="职位">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">公司/组织</label>
+                    <input class="form-input" id="exp-form-company" type="text" placeholder="公司">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">项目描述</label>
+                  <textarea class="form-textarea" id="exp-form-description" placeholder="描述你的职责和成果..."></textarea>
+                </div>
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label class="form-label">开始时间</label>
+                    <input class="form-input" id="exp-form-start" type="text" placeholder="2024-01">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">结束时间</label>
+                    <input class="form-input" id="exp-form-end" type="text" placeholder="至今">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">技能标签 (逗号分隔)</label>
+                  <input class="form-input" id="exp-form-skills" type="text" placeholder="Python, SQL, 产品规划">
+                </div>
+                <div class="toolbar" style="margin-top: 8px;">
+                  <button class="btn btn-primary" onclick="saveCurrentExperience()">保存</button>
+                  <button class="btn btn-ghost" onclick="deleteCurrentExperience()">删除</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personas Page -->
+        <div class="page" id="page-personas">
+          <div class="split">
+            <div class="split-left">
+              <div class="toolbar">
+                <span class="section-title">角色档案</span>
+                <div class="toolbar-spacer"></div>
+                <button class="btn btn-primary btn-sm" onclick="createNewPersona()">+ 新建角色</button>
+              </div>
+              <div class="exp-list" id="persona-list-container">
+                <div style="color: var(--text-tertiary); padding: 24px; text-align: center;">加载中...</div>
+              </div>
+            </div>
+            <div class="split-right">
+              <div class="card">
+                <input type="hidden" id="persona-form-id">
+                <div class="form-group">
+                  <label class="form-label">角色名称</label>
+                  <input class="form-input" id="persona-form-name" type="text" placeholder="角色名称">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">身份声明</label>
+                  <textarea class="form-textarea" id="persona-form-identity" placeholder="描述你的职业身份..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">语气风格</label>
+                  <select class="form-select" id="persona-form-tone">
+                    <option value="business_insight">business_insight</option>
+                    <option value="data_driven">data_driven</option>
+                    <option value="technical_deep">technical_deep</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">目标岗位</label>
+                  <input class="form-input" id="persona-form-targets" type="text" placeholder="产品经理, 供应链PM">
+                </div>
+                <div class="form-group" style="margin-top: 16px;">
+                  <div class="section-subtitle" style="margin-bottom: 10px;">经历适配度 (Fit Score)</div>
+                  <div id="persona-fit-scores" style="font-size: 13px; color: var(--text-tertiary);">
+                    选择角色后加载...
+                  </div>
+                </div>
+                <div class="toolbar">
+                  <button class="btn btn-primary" onclick="saveCurrentPersona()">保存角色</button>
+                  <button class="btn btn-ghost" onclick="deleteCurrentPersona()">删除</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resume Page -->
+        <div class="page" id="page-resume">
+          <div class="toolbar">
+            <span class="section-title">简历生成</span>
+            <div class="toolbar-spacer"></div>
+            <select class="form-select" id="resume-persona-select" style="width: 160px;">
+              <option value="">加载中...</option>
+            </select>
+            <select class="form-select" id="resume-template-select" style="width: 120px;">
+              <option value="modern">modern</option>
+              <option value="classic">classic</option>
+              <option value="minimal">minimal</option>
+              <option value="tech">tech</option>
+              <option value="外企">外企</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="generateResumeForSelectedPersona()">生成简历</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportResumeMarkdown()">导出 Markdown</button>
+            <button class="btn btn-primary btn-sm" onclick="exportResumePDF()">导出 PDF</button>
+          </div>
+          <div class="grid-2">
+            <div>
+              <div class="section-subtitle" id="resume-subtitle">选择角色并生成简历预览</div>
+              <div class="resume-preview" id="resume-preview-content">
+                <p style="color: var(--text-tertiary); text-align: center;">选择角色并点击「生成简历」查看预览</p>
+              </div>
+            </div>
+            <div>
+              <div class="section-subtitle">技能覆盖分析</div>
+              <div class="card" style="margin-bottom: 12px;">
+                <div class="card-title">已覆盖技能</div>
+                <div style="margin-top: 10px;" id="resume-covered-skills">
+                  <span class="pill">请先生成简历</span>
+                </div>
+              </div>
+              <div class="card" style="margin-bottom: 12px;">
+                <div class="card-title">缺失技能</div>
+                <div style="margin-top: 10px;" id="resume-missing-skills">
+                  <span class="pill">请先生成简历</span>
+                </div>
+                <button class="btn btn-primary" style="margin-top: 14px; width: 100%;" onclick="goToLearningPath()">生成学习路径</button>
+              </div>
+              <!-- 对话式调优 -->
+              <div class="card" style="margin-bottom: 12px;">
+                <div class="card-title">💬 对话式调优</div>
+                <div style="margin-top: 10px;">
+                  <textarea id="refine-instruction" class="form-textarea" rows="2" placeholder="输入调优指令，例如：更偏技术、强化数据能力..."></textarea>
+                  <button class="btn btn-primary" style="margin-top: 8px; width: 100%;" onclick="chatRefineResume()">✨ 生成调优版本</button>
+                </div>
+                <div id="refine-history" style="margin-top: 10px; display: none;">
+                  <div style="font-size: 12px; color: var(--text-quaternary); margin-bottom: 6px;">历史记录</div>
+                  <div id="refine-history-list"></div>
+                </div>
+                <div id="refine-result" style="margin-top: 10px; display: none;">
+                  <div style="font-size: 12px; color: var(--text-quaternary); margin-bottom: 6px;">调优结果</div>
+                  <div id="refine-result-content" class="resume-preview" style="padding: 16px; font-size: 13px; max-height: 300px; overflow: auto;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Jobs Page -->
+        <div class="page" id="page-jobs">
+          <div class="toolbar">
+            <span class="section-title">岗位匹配</span>
+            <div class="toolbar-spacer"></div>
+            <select id="job-persona-select" class="form-select" style="width:180px; margin-right:8px;">
+              <option value="">加载中...</option>
+            </select>
+          </div>
+
+          <!-- JD 粘贴区 -->
+          <div class="card" style="margin-bottom: 16px;">
+            <div class="card-title">粘贴岗位描述 (JD)</div>
+            <textarea id="jd-input" class="form-input" rows="4" placeholder="在此粘贴岗位描述文本..."></textarea>
+            <div class="toolbar" style="margin-top: 12px;">
+              <button class="btn btn-primary btn-sm" onclick="parseAndMatch()">解析并匹配</button>
+            </div>
+            <div id="jd-parse-status" style="margin-top: 8px; font-size: 13px; color: var(--text-tertiary);"></div>
+          </div>
+
+          <!-- 岗位列表 -->
+          <div id="jobs-list-container"></div>
+
+          <!-- 匹配详情模态框 -->
+          <div id="match-detail-panel" class="card" style="margin-top: 16px; display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div class="card-title" id="match-detail-title">匹配详情</div>
+              <button class="btn btn-ghost btn-sm" onclick="closeMatchDetail()">✕ 关闭</button>
+            </div>
+            <div id="match-detail-content"></div>
+
+            <!-- 修饰简历区 -->
+            <div style="margin-top: 16px; border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div class="card-title" style="font-size: 14px;">简历修饰 (针对此岗位)</div>
+                <button class="btn btn-primary btn-sm" id="reframe-btn" onclick="reframeResume()">✨ 修饰简历</button>
+              </div>
+              <div id="reframe-status" style="font-size: 13px; color: var(--text-tertiary); margin-bottom: 8px;"></div>
+              <div id="reframe-results"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div class="page" id="page-settings">
+          <div class="section-title">设置</div>
+          <div>
+            <div class="card" style="max-width: 640px;">
+              <div class="card-title">LLM 配置</div>
+              <div style="margin-top: 16px;">
+                <!-- Provider 选择 / 添加 -->
+                <div class="form-group">
+                  <label class="form-label">当前 Provider</label>
+                  <div style="display: flex; gap: 8px;">
+                    <select class="form-select" id="settings-provider-select" onchange="selectProviderToEdit()" style="flex: 1;">
+                      <option value="">加载中...</option>
+                    </select>
+                    <button class="btn btn-ghost btn-sm" onclick="addNewProvider()">+ 添加</button>
+                    <button class="btn btn-ghost btn-sm" onclick="removeCurrentProvider()" style="color: #e74c3c;">删除</button>
+                  </div>
+                </div>
+
+                <div id="provider-edit-form">
+                  <div class="form-group">
+                    <label class="form-label">Provider 名称</label>
+                    <input class="form-input" id="settings-provider-name" type="text" placeholder="如 tongyi / openai">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Base URL</label>
+                    <input class="form-input" id="settings-base-url" type="text" placeholder="https://dashscope.aliyuncs.com/compatible-mode/v1">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">默认模型</label>
+                    <input class="form-input" id="settings-model" type="text" placeholder="如 qwen-max / gpt-4o / 自定义模型名">
+                    <div style="font-size: 12px; color: var(--text-quaternary); margin-top: 4px;">支持任意 OpenAI 兼容 API 的模型名称</div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">API Key</label>
+                    <input class="form-input" id="settings-api-key" type="password" placeholder="留空则保留原值">
+                    <div style="font-size: 12px; color: var(--text-quaternary); margin-top: 4px;">已保存的 Key 不会显示</div>
+                  </div>
+                  <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="settings-enabled" style="width: 16px; height: 16px;">
+                    <label for="settings-enabled" style="font-size: 13px; color: var(--text-secondary); cursor: pointer;">启用此 Provider</label>
+                  </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+                  <label class="form-label">默认 Provider</label>
+                  <select class="form-select" id="settings-default-provider">
+                    <option value="">加载中...</option>
+                  </select>
+                </div>
+
+                <div class="toolbar" style="margin-top: 16px;">
+                  <button class="btn btn-primary" onclick="saveSettings()">保存配置</button>
+                  <button class="btn btn-ghost" onclick="testLLMConnection()">测试连接</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Skills Page -->
+        <div class="page" id="page-skills">
+          <div class="toolbar">
+            <span class="section-title">技能图谱</span>
+            <div class="toolbar-spacer"></div>
+            <input class="form-input" id="skill-search" type="text" placeholder="搜索技能..." style="width: 200px;" oninput="searchSkillsRealtime(this.value)">
+            <select class="form-select" id="skill-category-filter" style="width: 120px;" onchange="filterSkillsByCategory()">
+              <option value="">全部</option>
+              <option value="产品">产品</option>
+              <option value="技术">技术</option>
+              <option value="管理">管理</option>
+              <option value="行业">行业</option>
+            </select>
+          </div>
+          <div id="skills-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;">
+            <div style="color: var(--text-tertiary); padding: 24px; text-align: center; grid-column: 1 / -1;">加载中...</div>
+          </div>
+        </div>
+
+        <!-- Learning Page -->
+        <div class="page" id="page-learning">
+          <div class="toolbar">
+            <span class="section-title">学习路径</span>
+            <div class="toolbar-spacer"></div>
+            <input class="form-input" id="learning-skill-input" type="text" placeholder="输入技能名称..." style="width: 200px;">
+            <button class="btn btn-primary btn-sm" onclick="generateLearningPath()">生成路径</button>
+          </div>
+          <div style="display: flex; gap: 8px; margin: 0 0 16px 0; flex-wrap: wrap;">
+            <button class="btn btn-ghost btn-sm" id="lp-filter-all" onclick="filterLearningPaths('all')" style="font-weight: 600; background: var(--bg-tertiary);">全部来源</button>
+            <button class="btn btn-ghost btn-sm" onclick="loadLearningPathsBySource()">刷新列表</button>
+          </div>
+          <div id="learning-resources-container">
+            <div style="color: var(--text-tertiary); padding: 24px; text-align: center;">输入技能名称并点击「生成路径」，或点击「刷新列表」查看已有路径</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Skill Detail Modal -->
+  <div id="skill-modal" class="skill-modal-overlay" onclick="if(event.target===this)closeSkillModal()">
+    <div class="skill-modal">
+      <button class="skill-modal-close" onclick="closeSkillModal()">×</button>
+      <div class="skill-modal-title" id="skill-modal-title"></div>
+      <div class="skill-modal-tag" id="skill-modal-tag"></div>
+      <div class="skill-modal-desc" id="skill-modal-desc"></div>
+      <div class="skill-modal-section" id="skill-modal-prereqs" style="display:none;">
+        <div class="skill-modal-section-title">前置技能</div>
+        <div class="skill-modal-pills" id="skill-modal-prereqs-list"></div>
+      </div>
+      <div class="skill-modal-section" id="skill-modal-related" style="display:none;">
+        <div class="skill-modal-section-title">关联技能</div>
+        <div class="skill-modal-pills" id="skill-modal-related-list"></div>
+      </div>
+      <div class="skill-modal-section" id="skill-modal-learning" style="display:none;">
+        <div class="skill-modal-section-title">学习资源</div>
+        <div id="skill-modal-learning-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;"></div>
+      </div>
+      <div class="skill-modal-actions">
+        <button class="btn btn-primary" id="skill-modal-path-btn" onclick="generatePathFromModal()">生成学习路径</button>
+        <button class="btn btn-ghost" onclick="closeSkillModal()">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Loading Overlay -->
+  <div id="global-loading" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center; flex-direction: column; gap: 16px;">
+    <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--accent-brand); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    <div id="loading-text" style="color: var(--text-secondary); font-size: 14px;">加载中...</div>
+  </div>
+  <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
+  <!-- Global Error Box -->
+  <div id="global-error" style="display: none; position: fixed; top: 16px; right: 16px; max-width: 360px; background: var(--bg-elevated); border: 1px solid rgba(231,76,60,0.3); border-radius: var(--radius-md); padding: 16px; z-index: 10000; box-shadow: var(--shadow-dialog);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+      <div style="font-weight: 600; color: #e74c3c; font-size: 14px;">⚠️ 操作失败</div>
+      <button onclick="hideError()" style="background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 16px; line-height: 1;">×</button>
+    </div>
+    <div id="error-message" style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 8px;"></div>
+    <div id="error-suggestion" style="font-size: 12px; color: var(--text-tertiary); line-height: 1.5; padding-top: 8px; border-top: 1px solid var(--border-subtle); display: none;"></div>
+  </div>
+
+  <script>
+    /* ─── QWebChannel Bridge ─── */
+    window.pybridge = null;
+    window.pybridgeReady = false;
+
+    function initBridge() {
+      if (typeof qt === 'undefined' || !qt.webChannelTransport) {
+        console.log('[Bridge] Qt WebChannel not available');
+        window.pybridgeReady = false;
+        return;
+      }
+      try {
+        new QWebChannel(qt.webChannelTransport, function(channel) {
+          window.pybridge = channel.objects.pybridge;
+          window.pybridgeReady = true;
+          console.log('[Bridge] Python bridge connected');
+          loadDataFromPython();
+        });
+      } catch (e) {
+        console.error('[Bridge] QWebChannel init failed:', e);
+      }
+    }
+
+    function loadDataFromPython() {
+      if (!window.pybridge) return;
+
+      // Welcome stats
+      window.pybridge.getStats(function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            updateStats(resp.data);
+            updateWelcomeEmptyState(resp.data && resp.data.experiencesCount);
+          }
+        } catch (e) { console.error('getStats error', e); }
+      });
+
+      // Experiences
+      window.pybridge.getExperiences(function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) renderExperiences(resp.data);
+        } catch (e) { console.error('getExperiences error', e); }
+      });
+
+      // Personas
+      window.pybridge.getPersonas(function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) renderPersonas(resp.data);
+        } catch (e) { console.error('getPersonas error', e); }
+      });
+
+      // Jobs
+      loadPersonasForJobs();
+      loadJobs();
+
+      // Settings
+      loadSettings();
+    }
+
+    /* ─── UI Helpers ─── */
+    function switchPage(pageId, navEl) {
+      document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+      document.getElementById('page-' + pageId).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+      if (navEl) {
+        navEl.classList.add('active');
+      } else {
+        var map = {welcome:0, experiences:1, personas:2, resume:3, jobs:4, skills:5, learning:6, settings:7};
+        var items = document.querySelectorAll('.nav-item');
+        if (items[map[pageId]]) items[map[pageId]].classList.add('active');
+      }
+      var titles = {welcome: '欢迎', experiences: '经历库', personas: '角色档案', resume: '简历生成', jobs: '岗位匹配', skills: '技能图谱', learning: '学习路径', settings: '设置'};
+      document.getElementById('page-title').textContent = titles[pageId];
+      if (pageId === 'experiences') loadExperiencesFromBridge();
+      if (pageId === 'personas') loadPersonasFromBridge();
+      if (pageId === 'resume') loadResumePage();
+      if (pageId === 'jobs') { loadPersonasForJobs(); loadJobs(); }
+      if (pageId === 'skills') loadSkillsPage();
+      if (pageId === 'learning') loadLearningPage();
+    }
+
+    function updateStats(data) {
+      data = data || {};
+      var el = document.getElementById('stat-experiences');
+      if (el && data.experiencesCount != null) el.textContent = data.experiencesCount;
+      updateWelcomeEmptyState(data && data.experiencesCount);
+      el = document.getElementById('stat-personas');
+      if (el && data.personasCount != null) el.textContent = data.personasCount;
+      el = document.getElementById('stat-matches');
+      if (el && data.jobMatches != null) el.textContent = data.jobMatches;
+      el = document.getElementById('stat-paths');
+      if (el && data.learningPaths != null) el.textContent = data.learningPaths;
+    }
+
+    function updateWelcomeEmptyState(experiencesCount) {
+      var guide = document.getElementById('welcome-empty-guide');
+      if (!guide) return;
+      guide.style.display = (experiencesCount === 0 || experiencesCount === '0') ? 'block' : 'none';
+    }
+
+    function renderExperiences(list) {
+      var container = document.getElementById('exp-list-container');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!list || !list.length) {
+        container.innerHTML = '<div style="color: var(--text-tertiary); padding: 24px; text-align: center;">暂无经历</div>';
+        return;
+      }
+      list.forEach(function(item) {
+        var div = document.createElement('div');
+        div.className = 'exp-item';
+        div.onclick = function() { selectExperience(item.id); };
+        div.innerHTML =
+          '<div class="exp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>' +
+          '<div class="exp-info">' +
+            '<div class="exp-title">' + escapeHtml(item.title || '') + '</div>' +
+          '</div>';
+        container.appendChild(div);
+      });
+    }
+
+    function renderPersonas(list) {
+      var container = document.getElementById('persona-list-container');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!list || !list.length) {
+        container.innerHTML = '<div style="color: var(--text-tertiary); padding: 24px; text-align: center;">暂无角色</div>';
+        return;
+      }
+      list.forEach(function(item) {
+        var div = document.createElement('div');
+        div.className = 'exp-item';
+        div.onclick = function() { selectPersona(item.id); };
+        div.innerHTML =
+          '<div class="exp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>' +
+          '<div class="exp-info">' +
+            '<div class="exp-title">' + escapeHtml(item.name || '') + '</div>' +
+            '<div class="exp-sub">' + escapeHtml((item.identity_statement || '').substring(0, 40)) + '</div>' +
+          '</div>' +
+          (item.is_default ? '<div class="exp-tags"><span class="pill pill-accent">默认</span></div>' : '');
+        container.appendChild(div);
+      });
+    }
+
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    /* ——— Dynamic Page Loaders ——— */
+    var gExperiences = [];
+    var gPersonas = [];
+    var gSelectedExpId = null;
+    var gSelectedPersonaId = null;
+
+    function selectExperience(expId) {
+      gSelectedExpId = expId;
+      var item = gExperiences.find(function(e) { return e.id === expId; });
+      if (!item) return;
+      // 更新列表选中状态
+      document.querySelectorAll('#exp-list-container .exp-item').forEach(function(el, idx) {
+        el.classList.toggle('selected', gExperiences[idx] && gExperiences[idx].id === expId);
+      });
+      // 填充右侧表单
+      document.getElementById('exp-form-title').value = item.title || '';
+      document.getElementById('exp-form-role').value = item.role || '';
+      document.getElementById('exp-form-company').value = item.company || '';
+      document.getElementById('exp-form-description').value = item.description || '';
+      document.getElementById('exp-form-start').value = item.start_date || '';
+      document.getElementById('exp-form-end').value = item.end_date || '';
+      document.getElementById('exp-form-skills').value = (item.skills || []).join(', ');
+
+      var titleEl = document.querySelector('#page-experiences .split-right .card-title');
+      if (titleEl) titleEl.textContent = item.title || '';
+      var metaEl = document.querySelector('#page-experiences .split-right .card-meta');
+      if (metaEl) metaEl.textContent = (item.role || '') + ' @ ' + (item.company || '') + ' · ' + (item.start_date || '') + ' — ' + (item.end_date || '至今');
+    }
+
+    function newExperience() {
+      gSelectedExpId = null;
+      document.getElementById('exp-form-title').value = '';
+      document.getElementById('exp-form-role').value = '';
+      document.getElementById('exp-form-company').value = '';
+      document.getElementById('exp-form-description').value = '';
+      document.getElementById('exp-form-start').value = '';
+      document.getElementById('exp-form-end').value = '';
+      document.getElementById('exp-form-skills').value = '';
+      document.querySelectorAll('#exp-list-container .exp-item').forEach(function(el) { el.classList.remove('selected'); });
+      var titleEl = document.querySelector('#page-experiences .split-right .card-title');
+      if (titleEl) titleEl.textContent = '请填写并保存新经历';
+      var metaEl = document.querySelector('#page-experiences .split-right .card-meta');
+      if (metaEl) metaEl.textContent = '';
+    }
+
+    function saveCurrentExperience() {
+      var title = document.getElementById('exp-form-title').value.trim();
+      var role = document.getElementById('exp-form-role').value.trim();
+      var company = document.getElementById('exp-form-company').value.trim();
+      var description = document.getElementById('exp-form-description').value.trim();
+      var start = document.getElementById('exp-form-start').value.trim();
+      var end = document.getElementById('exp-form-end').value.trim();
+      var skills = document.getElementById('exp-form-skills').value.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+
+      if (!title) { alert('项目名称不能为空'); return; }
+
+      var payload = {
+        title: title,
+        role: role,
+        company: company,
+        raw_description: description,
+        start_date: start,
+        end_date: end,
+        skills: skills,
+      };
+      if (gSelectedExpId) {
+        payload.id = gSelectedExpId;
+      }
+
+      if (!window.pybridge) return;
+      window.pybridge.saveExperience(JSON.stringify(payload), function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            alert('保存成功');
+            loadExperiencesFromBridge();
+          } else if (resp.error_type === 'TIME_CONFLICT') {
+            var names = (resp.conflicts || []).map(function(c){ return c.title; }).join(', ');
+            alert('时间冲突：与 ' + names + ' 重叠，请调整日期后重试');
+          } else {
+            alert('保存失败: ' + (resp.error || ''));
+          }
+        } catch (e) { alert('保存错误'); }
+      });
+    }
+
+    function deleteCurrentExperience() {
+      if (!gSelectedExpId) { alert('请先选择一条经历'); return; }
+      if (!confirm('确定删除该经历？')) return;
+      if (!window.pybridge) return;
+      window.pybridge.deleteExperience(gSelectedExpId, function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            gSelectedExpId = null;
+            loadExperiencesFromBridge();
+          } else {
+            alert('删除失败: ' + (resp.error || ''));
+          }
+        } catch (e) { alert('删除错误'); }
+      });
+    }
+
+    function loadExperiencesFromBridge() {
+      if (!window.pybridge) return;
+      window.pybridge.getExperiences(function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) { gExperiences = resp.data || []; renderExperiences(gExperiences); }
+        } catch (e) { console.error('loadExperiences error', e); }
+      });
+    }
+
+    function selectPersona(personaId) {
+      gSelectedPersonaId = personaId;
+      var item = gPersonas.find(function(p) { return p.id === personaId; });
+      if (!item) return;
+      document.querySelectorAll('#persona-list-container .exp-item').forEach(function(el, idx) {
+        el.classList.toggle('selected', gPersonas[idx] && gPersonas[idx].id === personaId);
+      });
+      var inputs = document.querySelectorAll('#page-personas .split-right .form-input, #page-personas .split-right .form-textarea, #page-personas .split-right .form-select');
+      if (inputs.length >= 4) {
+        inputs[0].value = item.name || '';
+        inputs[1].value = item.identity_statement || '';
+        inputs[2].value = item.tone_style || 'business_insight';
+        inputs[3].value = (item.target_job_profiles || []).join(', ');
+      }
+      loadFitScoresForPersona(personaId);
+    }
+
+    function loadFitScoresForPersona(personaId) {
+      var container = document.getElementById('persona-fit-scores');
+      if (!container || !personaId) {
+        if (container) container.innerHTML = '选择角色后加载...';
+        return;
+      }
+      container.innerHTML = '加载中...';
+      if (!window.pybridge) return;
+      window.pybridge.getExperiencesWithFitScore(personaId, function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success && resp.data && resp.data.length > 0) {
+            renderFitScores(resp.data, personaId);
+          } else {
+            container.innerHTML = '<span style="color: var(--text-tertiary);">暂无经历或适配度数据</span>';
+          }
+        } catch (e) { container.innerHTML = '加载失败'; }
+      });
+    }
+
+    function renderFitScores(items, personaId) {
+      var container = document.getElementById('persona-fit-scores');
+      var html = '';
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        var overriddenClass = item.user_overridden ? 'color: var(--accent); font-weight: 600;' : 'color: var(--text-secondary);';
+        var overriddenLabel = item.user_overridden ? ' (已手动调整)' : '';
+        html += '<div style="margin-bottom: 10px; padding: 8px; background: var(--bg-tertiary); border-radius: 6px;">' +
+          '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">' +
+            '<span style="font-weight: 500;">' + escapeHtml(item.title || '未命名') + '</span>' +
+            '<span style="font-size: 12px; ' + overriddenClass + '">' + item.relevance_score + '%' + overriddenLabel + '</span>' +
+          '</div>' +
+          '<input type="range" min="0" max="100" value="' + item.relevance_score + '" ' +
+            'style="width: 100%; cursor: pointer;" ' +
+            'onchange="onFitScoreChange(\'' + personaId + '\', \'' + item.experience_id + '\', this.value)" ' +
+            'oninput="this.nextElementSibling.innerText = this.value + \'%\'">' +
+          '<div style="text-align: right; font-size: 11px; color: var(--text-tertiary); margin-top: 2px;">' + item.relevance_score + '%</div>' +
+        '</div>';
+      }
+      container.innerHTML = html;
+    }
+
+    function onFitScoreChange(personaId, expId, score) {
+      if (!window.pybridge) return;
+      window.pybridge.updateFitScore(JSON.stringify({
+        persona_id: personaId,
+        experience_id: expId,
+        score: parseInt(score, 10),
+      }), function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            // 刷新列表显示覆盖状态
+            loadFitScoresForPersona(personaId);
+          } else {
+            showError('Fit Score 更新失败', resp.error || '');
+          }
+        } catch (e) { showError('Fit Score 更新错误', ''); }
+      });
+    }
+
+    function saveCurrentPersona() {
+      if (!gSelectedPersonaId) { alert('请先选择一个角色'); return; }
+      var inputs = document.querySelectorAll('#page-personas .split-right .form-input, #page-personas .split-right .form-textarea, #page-personas .split-right .form-select');
+      if (inputs.length < 4) return;
+      var payload = {
+        name: inputs[0].value,
+        identity_statement: inputs[1].value,
+        tone_style: inputs[2].value,
+        target_job_profiles: inputs[3].value.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; }),
+      };
+      if (!window.pybridge) return;
+      window.pybridge.updatePersona(gSelectedPersonaId, JSON.stringify(payload), function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            alert('保存成功');
+            loadPersonasFromBridge();
+            refreshAllPersonaSelectors();
+          } else {
+            alert('保存失败: ' + (resp.error || ''));
+          }
+        } catch (e) { alert('保存错误'); }
+      });
+    }
+
+    function deleteCurrentPersona() {
+      if (!gSelectedPersonaId) { alert('请先选择一个角色'); return; }
+      if (!confirm('确定删除该角色？')) return;
+      if (!window.pybridge) return;
+      window.pybridge.deletePersona(gSelectedPersonaId, function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            gSelectedPersonaId = null;
+            loadPersonasFromBridge();
+            refreshAllPersonaSelectors();
+          } else {
+            alert('删除失败: ' + (resp.error || ''));
+          }
+        } catch (e) { alert('删除错误'); }
+      });
+    }
+
+    function refreshAllPersonaSelectors() {
+      loadResumePage();
+      var jobSelect = document.getElementById('job-persona-select');
+      if (jobSelect && window.pybridge) {
+        window.pybridge.getPersonas(function(result) {
+          try {
+            var resp = JSON.parse(result);
+            if (!resp.success) return;
+            var current = jobSelect.value;
+            jobSelect.innerHTML = '';
+            resp.data.forEach(function(p) {
+              var opt = document.createElement('option');
+              opt.value = p.id;
+              opt.textContent = p.name;
+              jobSelect.appendChild(opt);
+            });
+            if (current) jobSelect.value = current;
+            else if (resp.data.length) jobSelect.value = resp.data[0].id;
+          } catch (e) { console.error('refreshJobPersonaSelect error', e); }
+        });
+      }
+    }
+
+    function createNewPersona() {
+      var name = prompt('输入新角色名称:');
+      if (!name) return;
+      if (!window.pybridge) return;
+      window.pybridge.createPersona(JSON.stringify({name: name, identity_statement: '', capability_weights: {}}), function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            loadPersonasFromBridge();
+            refreshAllPersonaSelectors();
+          } else {
+            alert('创建失败: ' + (resp.error || ''));
+          }
+        } catch (e) { alert('创建错误'); }
+      });
+    }
+
+    function loadPersonasFromBridge() {
+      if (!window.pybridge) return;
+      window.pybridge.getPersonas(function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) { gPersonas = resp.data || []; renderPersonas(gPersonas); }
+        } catch (e) { console.error('loadPersonas error', e); }
+      });
+    }
+
+    function loadResumePage() {
+      if (!window.pybridge) return;
+      window.pybridge.getPersonas(function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (!resp.success) return;
+          var select = document.getElementById('resume-persona-select');
+          if (!select) return;
+          var current = select.value;
+          select.innerHTML = '';
+          resp.data.forEach(function(p) {
+            var opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.name;
+            select.appendChild(opt);
+          });
+          if (current) select.value = current;
+          else if (resp.data.length) select.value = resp.data[0].id;
+        } catch (e) { console.error('loadResumePersonas error', e); }
+      });
+    }
+
+    function exportResumeMarkdown() {
+      var select = document.getElementById('resume-persona-select');
+      if (!select || !select.value) { showError('请先选择角色', ''); return; }
+      if (!window.pybridge) return;
+      var templateSelect = document.getElementById('resume-template-select');
+      var template = templateSelect ? templateSelect.value : 'modern';
+      window.pybridge.generateResume(select.value, template, function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success && resp.markdown) {
+            var blob = new Blob([resp.markdown], {type: 'text/markdown'});
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = '简历_' + select.value + '.md';
+            a.click();
+            URL.revokeObjectURL(url);
+          } else {
+            showError('导出失败', resp.error || '');
+          }
+        } catch (e) { showError('导出错误', ''); }
+      });
+    }
+
+    function exportResumePDF() {
+      var select = document.getElementById('resume-persona-select');
+      if (!select || !select.value) { showError('请先选择角色', ''); return; }
+      if (!window.pybridge) return;
+      window.pybridge.exportResumePDF(select.value, function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success && resp.data && resp.data.pdf_base64) {
+            // 下载真实 PDF
+            var byteChars = atob(resp.data.pdf_base64);
+            var byteNums = new Array(byteChars.length);
+            for (var i = 0; i < byteChars.length; i++) {
+              byteNums[i] = byteChars.charCodeAt(i);
+            }
+            var byteArray = new Uint8Array(byteNums);
+            var blob = new Blob([byteArray], {type: 'application/pdf'});
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = resp.data.filename || ('简历_' + select.value + '.pdf');
+            a.click();
+            URL.revokeObjectURL(url);
+          } else if (resp.fallback_markdown) {
+            // 降级为 Markdown 下载
+            showError('PDF导出失败', resp.error || '将降级为 Markdown 下载');
+            var blob = new Blob([resp.fallback_markdown], {type: 'text/markdown'});
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = '简历_' + select.value + '.md';
+            a.click();
+            URL.revokeObjectURL(url);
+          } else {
+            showError('PDF导出失败', resp.error || '');
+          }
+        } catch (e) { showError('PDF导出错误', ''); }
+      });
+    }
+
+    function goToLearningPath() {
+      var missingContainer = document.getElementById('resume-missing-skills');
+      var firstSkill = '';
+      if (missingContainer) {
+        var pills = missingContainer.querySelectorAll('.pill');
+        if (pills.length > 0) firstSkill = pills[0].textContent.trim();
+      }
+      showLoading('正在生成学习路径...');
+      switchPage('learning');
+      setTimeout(function() {
+        hideLoading();
+        if (firstSkill) {
+          document.getElementById('learning-skill-input').value = firstSkill;
+          generateLearningPath();
+        }
+      }, 300);
+    }
+
+    function generateResumeForSelectedPersona() {
+      var select = document.getElementById('resume-persona-select');
+      if (!select || !select.value) { showError('请先选择角色', ''); return; }
+      var templateSelect = document.getElementById('resume-template-select');
+      var template = templateSelect ? templateSelect.value : 'modern';
+      if (!window.pybridge) return;
+      var preview = document.querySelector('#page-resume .resume-preview');
+      if (preview) preview.innerHTML = '<div style="color: var(--text-tertiary);">生成中...</div>';
+      showLoading('正在生成简历...');
+      window.pybridge.generateResume(select.value, template, function(result) {
+        hideLoading();
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success && preview) {
+            preview.innerHTML = resp.markdown || '';
+            // 更新技能覆盖面板
+            var coveredEl = document.getElementById('resume-covered-skills');
+            var missingEl = document.getElementById('resume-missing-skills');
+            if (coveredEl) {
+              var covered = resp.covered_skills || [];
+              coveredEl.innerHTML = covered.length ? covered.map(function(s){ return '<span class="pill pill-success">' + escapeHtml(s) + '</span>'; }).join('') : '<span class="pill">暂无已覆盖技能</span>';
+            }
+            if (missingEl) {
+              var missing = resp.missing_skills || [];
+              missingEl.innerHTML = missing.length ? missing.map(function(s){ return '<span class="pill">' + escapeHtml(s) + '</span>'; }).join('') : '<span class="pill">暂无缺失技能</span>';
+            }
+          } else {
+            if (preview) preview.innerHTML = '<div style="color: var(--danger);">生成失败: ' + escapeHtml(resp.error || '') + '</div>';
+            showError('简历生成失败', resp.error || '请检查 LLM 配置或网络连接');
+          }
+        } catch (e) { hideLoading(); if (preview) preview.innerHTML = '<div style="color: var(--danger);">生成错误</div>'; }
+      });
+    }
+
+    function chatRefineResume() {
+      var select = document.querySelector('#page-resume select.form-select');
+      if (!select || !select.value) { showError('请先选择角色', ''); return; }
+      var instruction = document.getElementById('refine-instruction').value.trim();
+      if (!instruction) { showError('请输入调优指令', ''); return; }
+      showLoading('正在调优简历...');
+      window.pybridge.chatRefineResume(select.value, instruction, function(result) {
+        hideLoading();
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            var historyList = document.getElementById('refine-history-list');
+            var historyDiv = document.getElementById('refine-history');
+            var resultDiv = document.getElementById('refine-result');
+            var resultContent = document.getElementById('refine-result-content');
+            var entry = document.createElement('div');
+            entry.style.cssText = 'font-size: 12px; color: var(--text-secondary); padding: 6px 0; border-bottom: 1px solid var(--border-subtle);';
+            entry.innerHTML = '<span style="color: var(--accent-violet);">' + escapeHtml(instruction) + '</span> → 已生成';
+            historyList.appendChild(entry);
+            historyDiv.style.display = 'block';
+            resultContent.innerHTML = resp.data.refined ? resp.data.refined.replace(/\n/g, '<br>') : '<p style="color: var(--text-tertiary);">暂无内容</p>';
+            resultDiv.style.display = 'block';
+          } else {
+            showError('调优失败: ' + (resp.error || ''), '');
+          }
+        } catch (e) { showError('调优错误', ''); }
+      });
+    }
+
+    /* ——— Loading Overlay ——— */
+    function showLoading(text) {
+      var overlay = document.getElementById('global-loading');
+      if (!overlay) return;
+      document.getElementById('loading-text').textContent = text || '加载中...';
+      overlay.style.display = 'flex';
+    }
+    function hideLoading() {
+      var overlay = document.getElementById('global-loading');
+      if (overlay) overlay.style.display = 'none';
+    }
+
+    /* ——— Friendly Error ——— */
+    function showError(message, suggestion) {
+      var box = document.getElementById('global-error');
+      var msgEl = document.getElementById('error-message');
+      var sugEl = document.getElementById('error-suggestion');
+      if (!box) { alert(message + (suggestion ? '\n\n建议: ' + suggestion : '')); return; }
+      msgEl.textContent = message || '发生错误';
+      sugEl.textContent = suggestion || '';
+      sugEl.style.display = suggestion ? 'block' : 'none';
+      box.style.display = 'block';
+    }
+    function hideError() {
+      var box = document.getElementById('global-error');
+      if (box) box.style.display = 'none';
+    }
+
+    var gCurrentPersonaId = null;
+    var gJobs = [];
+    var gCurrentMatchId = null;
+    var gCurrentJobId = null;
+
+    function loadPersonasForJobs() {
+      if (!window.pybridge) return;
+      window.pybridge.getPersonas(function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (!resp.success) return;
+          var select = document.getElementById('job-persona-select');
+          if (!select) return;
+          var current = select.value;
+          select.innerHTML = '<option value="">请选择角色</option>';
+          resp.data.forEach(function(p) {
+            var opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.name;
+            select.appendChild(opt);
+          });
+          if (current) select.value = current;
+          else if (resp.data.length > 0) {
+            select.value = resp.data[0].id;
+            gCurrentPersonaId = resp.data[0].id;
+          }
+        } catch (e) { console.error('loadPersonasForJobs error', e); }
+      });
+    }
+
+    function loadJobs() {
+      if (!window.pybridge) {
+        console.log('[Jobs] pybridge not ready');
+        return;
+      }
+      window.pybridge.listJobs(function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            gJobs = resp.data || [];
+            renderJobs(gJobs);
+          }
+        } catch (e) { console.error('listJobs error', e); }
+      });
+    }
+
+    function renderJobs(list) {
+      var container = document.getElementById('jobs-list-container');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!list || !list.length) {
+        container.innerHTML = '<div style="color: var(--text-tertiary); padding: 24px; text-align: center;">暂无岗位，粘贴 JD 后点击"解析并匹配"</div>';
+        return;
+      }
+      list.forEach(function(job) {
+        var card = document.createElement('div');
+        card.className = 'match-card';
+        card.style.cursor = 'pointer';
+        var jobIdLiteral = JSON.stringify(String(job.id || ''));
+        card.innerHTML =
+          '<div class="match-info" style="flex: 1;">' +
+            '<div class="match-title">' + escapeHtml(job.title || '') + '</div>' +
+            '<div class="match-company">' + escapeHtml((job.company || '') + ' · ' + (job.location || '') + ' · ' + (job.salary_range || '')) + '</div>' +
+            '<div class="match-skills">' + (job.skills || []).slice(0, 6).map(function(s){ return '<span class="pill">' + escapeHtml(s) + '</span>'; }).join('') + '</div>' +
+          '</div>' +
+          '<div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">' +
+            '<button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); viewJobMatches(' + jobIdLiteral + ')">查看匹配</button>' +
+            '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); deleteJob(' + jobIdLiteral + ')">删除</button>' +
+          '</div>';
+        card.addEventListener('click', function() { viewJobMatches(String(job.id || '')); });
+        container.appendChild(card);
+      });
+    }
+
+    function parseAndMatch() {
+      var jdText = document.getElementById('jd-input').value.trim();
+      var personaId = document.getElementById('job-persona-select').value;
+      var statusEl = document.getElementById('jd-parse-status');
+      if (!jdText) { statusEl.textContent = '请先粘贴岗位描述'; return; }
+      if (!personaId) { statusEl.textContent = '请先选择角色'; return; }
+      if (!window.pybridge) { statusEl.textContent = 'Python 桥接未就绪'; return; }
+      statusEl.textContent = 'JD解析中...';
+      showLoading('JD解析中...');
+      window.pybridge.parseJD(jdText, function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (!resp.success) {
+            hideLoading();
+            statusEl.textContent = '解析失败: ' + (resp.error || '');
+            showError('解析失败', resp.error || '');
+            return;
+          }
+          var jobId = resp.data.id;
+          statusEl.textContent = '匹配计算中...';
+          showLoading('匹配计算中...');
+          window.pybridge.matchJob(jobId, personaId, function(matchResult) {
+            hideLoading();
+            try {
+              var mResp = JSON.parse(matchResult);
+              if (mResp.success) {
+                statusEl.textContent = '完成！分数: ' + Math.round(mResp.data.score || 0);
+                document.getElementById('jd-input').value = '';
+                loadJobs();
+                viewJobMatches(jobId);
+              } else {
+                statusEl.textContent = '匹配失败: ' + (mResp.error || '');
+                showError('匹配失败', mResp.error || '请检查 LLM 配置或网络连接');
+              }
+            } catch (e) { hideLoading(); statusEl.textContent = '匹配错误'; }
+          });
+        } catch (e) { hideLoading(); statusEl.textContent = '解析错误'; }
+      });
+    }
+
+    function viewJobMatches(jobId) {
+      if (!window.pybridge) return;
+      gCurrentJobId = jobId;
+      window.pybridge.getJobMatches(jobId, function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (!resp.success) return;
+          var matches = resp.data || [];
+          var panel = document.getElementById('match-detail-panel');
+          var content = document.getElementById('match-detail-content');
+          var title = document.getElementById('match-detail-title');
+          panel.style.display = 'block';
+          document.getElementById('reframe-results').innerHTML = '';
+          document.getElementById('reframe-status').textContent = '';
+          gCurrentMatchId = null;
+
+          if (!matches.length) {
+            content.innerHTML = '<div style="color: var(--text-tertiary);">暂无匹配记录</div>';
+            return;
+          }
+          var m = matches[0];
+          gCurrentMatchId = m.id;
+          title.textContent = (m.job_title || '岗位') + ' — 匹配详情';
+          var scoreColor = m.score >= 70 ? '#2ecc71' : (m.score >= 40 ? '#f39c12' : '#e74c3c');
+          content.innerHTML =
+            '<div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">' +
+              '<div style="font-size: 32px; font-weight: 700; color: ' + scoreColor + ';">' + Math.round(m.score || 0) + '</div>' +
+              '<div>' +
+                '<div style="font-size: 13px; color: var(--text-secondary);">匹配角色: ' + escapeHtml(m.persona_name || '') + '</div>' +
+                '<div style="font-size: 13px; color: var(--text-secondary);">投递状态: ' + escapeHtml(m.status || 'new') + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div style="margin-bottom: 8px;"><strong>匹配理由:</strong></div>' +
+            '<div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.6;">' + escapeHtml(m.match_reason || '暂无') + '</div>' +
+            '<div style="margin-bottom: 12px;">' +
+              '<div style="margin-bottom: 8px;"><strong>岗位描述:</strong></div>' +
+              '<div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">' + escapeHtml(m.job_description || '暂无岗位描述') + '</div>' +
+            '</div>' +
+            '<div style="margin-bottom: 8px;"><strong>技能匹配:</strong></div>' +
+            '<div class="match-skills" style="margin-bottom: 12px;">' + (m.skill_matches || []).map(function(s){ return '<span class="pill pill-success">' + escapeHtml(s) + '</span>'; }).join('') + '</div>' +
+            '<div style="margin-bottom: 8px;"><strong>经历强度:</strong></div>' +
+            '<div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">' + (m.strengths || []).map(function(s){ return '<div>• ' + escapeHtml(s) + '</div>'; }).join('') + '</div>' +
+            '<div style="display: flex; gap: 8px;">' +
+              '<select id="match-status-select" class="form-select" style="width:140px;">' +
+                '<option value="new" ' + (m.status==='new'?'selected':'') + '>new</option>' +
+                '<option value="applied" ' + (m.status==='applied'?'selected':'') + '>applied</option>' +
+                '<option value="interview" ' + (m.status==='interview'?'selected':'') + '>interview</option>' +
+                '<option value="offer" ' + (m.status==='offer'?'selected':'') + '>offer</option>' +
+                '<option value="rejected" ' + (m.status==='rejected'?'selected':'') + '>rejected</option>' +
+              '</select>' +
+              '<button class="btn btn-primary btn-sm" onclick="updateMatchStatus()">更新状态</button>' +
+            '</div>';
+
+          // 自动加载已有修饰结果
+          loadReframeResults(m.id);
+        } catch (e) { console.error('getJobMatches error', e); }
+      });
+    }
+
+    function closeMatchDetail() {
+      document.getElementById('match-detail-panel').style.display = 'none';
+      gCurrentMatchId = null;
+      gCurrentJobId = null;
+    }
+
+    function deleteJob(jobId) {
+      if (!confirm('确定删除该岗位？关联的匹配和修饰记录将一并删除。')) return;
+      if (!window.pybridge) return;
+      window.pybridge.deleteJob(jobId, function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            loadJobs();
+            if (gCurrentJobId === jobId) closeMatchDetail();
+          } else {
+            alert('删除失败: ' + (resp.error || ''));
+          }
+        } catch (e) { console.error('deleteJob error', e); }
+      });
+    }
+
+    function updateMatchStatus() {
+      if (!gCurrentMatchId) return;
+      var status = document.getElementById('match-status-select').value;
+      if (!window.pybridge) return;
+      window.pybridge.updateMatchStatus(gCurrentMatchId, status, function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            alert('状态已更新为: ' + status);
+            if (gCurrentJobId) viewJobMatches(gCurrentJobId);
+          } else {
+            alert('更新失败: ' + (resp.error || ''));
+          }
+        } catch (e) { console.error('updateMatchStatus error', e); }
+      });
+    }
+
+    function reframeResume() {
+      if (!gCurrentMatchId) { showError('请先选择岗位并查看匹配详情', ''); return; }
+      var statusEl = document.getElementById('reframe-status');
+      var btn = document.getElementById('reframe-btn');
+      if (!window.pybridge) return;
+      statusEl.textContent = '修饰中，请稍候...';
+      btn.disabled = true;
+      showLoading('正在修饰经历，使其更符合 JD 要求...');
+      window.pybridge.reframeResume(gCurrentMatchId, function(result) {
+        btn.disabled = false;
+        hideLoading();
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            statusEl.textContent = '修饰完成！';
+            loadReframeResults(gCurrentMatchId);
+          } else {
+            statusEl.textContent = '修饰失败: ' + (resp.error || '');
+            showError('修饰失败', resp.error || '请检查 LLM 配置或网络连接');
+          }
+        } catch (e) { hideLoading(); statusEl.textContent = '修饰错误'; }
+      });
+    }
+
+    function loadReframeResults(matchId) {
+      if (!window.pybridge) return;
+      window.pybridge.getReframeResults(matchId, function(result) {
+        try {
+          var resp = JSON.parse(result);
+          var container = document.getElementById('reframe-results');
+          var reframes = resp.reframes || resp.data || [];
+          if (!resp.success || !reframes.length) {
+            container.innerHTML = '<div style="color: var(--text-tertiary); font-size: 13px;">暂无修饰记录，点击「修饰简历」生成</div>';
+            return;
+          }
+          var html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+          reframes.forEach(function(r) {
+            var reframeId = r.id || '';
+            html +=
+              '<div id="reframe-card-' + reframeId + '" style="background: var(--bg-tertiary); border-radius: 8px; padding: 12px;">' +
+                '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">' +
+                  '<div style="font-size: 12px; color: var(--text-tertiary);">' + escapeHtml(r.experience_title || '') + ' → ' + escapeHtml(r.target_capability || '') + '</div>' +
+                  '<div style="display: flex; gap: 6px;">' +
+                    '<button class="btn btn-ghost btn-sm" style="padding: 2px 8px; font-size: 12px;" onclick="toggleReframeEdit(\'' + reframeId + '\')">编辑</button>' +
+                    '<button class="btn btn-ghost btn-sm" style="padding: 2px 8px; font-size: 12px; color: var(--danger);" onclick="resetReframe(\'' + reframeId + '\')">重置</button>' +
+                  '</div>' +
+                '</div>' +
+                '<div id="reframe-view-' + reframeId + '" style="font-size: 13px; line-height: 1.6; color: var(--text-primary); white-space: pre-wrap;">' + escapeHtml(r.reframed_content || '') + '</div>' +
+                '<div id="reframe-edit-' + reframeId + '" style="display: none; margin-top: 8px;">' +
+                  '<textarea id="reframe-ta-' + reframeId + '" style="width: 100%; min-height: 80px; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-primary); color: var(--text-primary); font-size: 13px; resize: vertical;">' + escapeHtml(r.reframed_content || '') + '</textarea>' +
+                  '<div style="display: flex; gap: 8px; margin-top: 8px;">' +
+                    '<button class="btn btn-primary btn-sm" onclick="saveReframeEdit(\'' + reframeId + '\')">保存</button>' +
+                    '<button class="btn btn-ghost btn-sm" onclick="toggleReframeEdit(\'' + reframeId + '\')">取消</button>' +
+                  '</div>' +
+                '</div>' +
+              '</div>';
+          });
+          html += '</div>';
+          container.innerHTML = html;
+        } catch (e) { console.error('getReframeResults error', e); }
+      });
+    }
+
+    function toggleReframeEdit(reframeId) {
+      var viewEl = document.getElementById('reframe-view-' + reframeId);
+      var editEl = document.getElementById('reframe-edit-' + reframeId);
+      if (!viewEl || !editEl) return;
+      if (editEl.style.display === 'none') {
+        viewEl.style.display = 'none';
+        editEl.style.display = 'block';
+      } else {
+        viewEl.style.display = 'block';
+        editEl.style.display = 'none';
+      }
+    }
+
+    function saveReframeEdit(reframeId) {
+      var ta = document.getElementById('reframe-ta-' + reframeId);
+      if (!ta || !window.pybridge) return;
+      window.pybridge.updateReframe(JSON.stringify({
+        reframe_id: reframeId,
+        reframed_summary: ta.value,
+      }), function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            loadReframeResults(gCurrentMatchId);
+          } else {
+            showError('重述保存失败', resp.error || '');
+          }
+        } catch (e) { showError('重述保存错误', ''); }
+      });
+    }
+
+    function resetReframe(reframeId) {
+      if (!confirm('确定重置这条修饰记录吗？重置后将重新走 LLM 生成。')) return;
+      if (!window.pybridge) return;
+      window.pybridge.resetReframe(reframeId, function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            loadReframeResults(gCurrentMatchId);
+          } else {
+            showError('重述重置失败', resp.error || '');
+          }
+        } catch (e) { showError('重述重置错误', ''); }
+      });
+    }
+
+    /* ─── Settings ─── */
+    var _settingsProviders = [];
+    var _settingsDefaultProvider = "";
+    var _settingsCurrentProviderIndex = 0;
+
+    function loadSettings() {
+      if (!window.pybridge) return;
+      window.pybridge.getSettings(function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success && resp.data) {
+            _settingsProviders = resp.data.llm_providers || [];
+            _settingsDefaultProvider = resp.data.default_llm_provider || "";
+            renderProviderSelector();
+            renderDefaultProviderSelector();
+            var defaultIndex = 0;
+            for (var i = 0; i < _settingsProviders.length; i++) {
+              if (_settingsProviders[i].name === _settingsDefaultProvider) {
+                defaultIndex = i;
+                break;
+              }
+            }
+            var sel = document.getElementById('settings-provider-select');
+            if (sel && _settingsProviders.length > 0) sel.value = defaultIndex.toString();
+            selectProviderToEdit();
+          }
+        } catch (e) { console.error('loadSettings error', e); }
+      });
+    }
+
+    function renderProviderSelector() {
+      var sel = document.getElementById('settings-provider-select');
+      if (!sel) return;
+      sel.innerHTML = '';
+      _settingsProviders.forEach(function(p, idx) {
+        var opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = p.name + (p.enabled ? '' : ' (已禁用)');
+        sel.appendChild(opt);
+      });
+    }
+
+    function renderDefaultProviderSelector() {
+      var sel = document.getElementById('settings-default-provider');
+      if (!sel) return;
+      sel.innerHTML = '';
+      _settingsProviders.forEach(function(p) {
+        if (!p.enabled) return;
+        var opt = document.createElement('option');
+        opt.value = p.name;
+        opt.textContent = p.name;
+        if (p.name === _settingsDefaultProvider) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+
+    function syncCurrentProviderFromForm() {
+      var idx = _settingsCurrentProviderIndex;
+      if (isNaN(idx) || !_settingsProviders[idx]) return;
+      _settingsProviders[idx].name = document.getElementById('settings-provider-name').value.trim();
+      _settingsProviders[idx].base_url = document.getElementById('settings-base-url').value.trim() || null;
+      _settingsProviders[idx].default_model = document.getElementById('settings-model').value.trim();
+      _settingsProviders[idx].enabled = document.getElementById('settings-enabled').checked;
+    }
+
+    function selectProviderToEdit() {
+      var sel = document.getElementById('settings-provider-select');
+      var idx = parseInt(sel.value);
+      if (isNaN(idx)) idx = 0;
+      var p = _settingsProviders[idx];
+      if (!p) return;
+      _settingsCurrentProviderIndex = idx;
+      document.getElementById('settings-provider-name').value = p.name || '';
+      document.getElementById('settings-base-url').value = p.base_url || '';
+      document.getElementById('settings-model').value = p.default_model || '';
+      document.getElementById('settings-api-key').value = '';
+      document.getElementById('settings-enabled').checked = !!p.enabled;
+    }
+
+    function addNewProvider() {
+      var name = prompt('请输入新 Provider 名称（如 my-openai-proxy）：');
+      if (!name) return;
+      name = name.trim();
+      if (!name) return;
+      for (var i = 0; i < _settingsProviders.length; i++) {
+        if (_settingsProviders[i].name === name) { alert('Provider 已存在'); return; }
+      }
+      _settingsProviders.push({
+        name: name,
+        base_url: '',
+        default_model: '',
+        enabled: true,
+        has_key: false
+      });
+      renderProviderSelector();
+      renderDefaultProviderSelector();
+      document.getElementById('settings-provider-select').value = (_settingsProviders.length - 1).toString();
+      selectProviderToEdit();
+    }
+
+    function removeCurrentProvider() {
+      var sel = document.getElementById('settings-provider-select');
+      var idx = parseInt(sel.value);
+      if (isNaN(idx)) return;
+      var p = _settingsProviders[idx];
+      if (!p) return;
+      if (!confirm('确定删除 Provider "' + p.name + '" 吗？')) return;
+      _settingsProviders.splice(idx, 1);
+      renderProviderSelector();
+      renderDefaultProviderSelector();
+      if (_settingsProviders.length > 0) {
+        document.getElementById('settings-provider-select').value = '0';
+        selectProviderToEdit();
+      } else {
+        _settingsCurrentProviderIndex = 0;
+        document.getElementById('settings-provider-name').value = '';
+        document.getElementById('settings-base-url').value = '';
+        document.getElementById('settings-model').value = '';
+        document.getElementById('settings-api-key').value = '';
+        document.getElementById('settings-enabled').checked = false;
+      }
+    }
+
+    function saveSettings() {
+      syncCurrentProviderFromForm();
+      var selectedIdx = _settingsCurrentProviderIndex;
+      var currentApiKey = document.getElementById('settings-api-key').value.trim();
+      var payload = {
+        providers: _settingsProviders.map(function(p, idx) {
+          return {
+            name: p.name,
+            base_url: p.base_url,
+            default_model: p.default_model,
+            enabled: p.enabled,
+            api_key: idx === selectedIdx ? currentApiKey : ''
+          };
+        }),
+        default_provider: document.getElementById('settings-default-provider').value
+      };
+      if (!window.pybridge) return;
+      window.pybridge.saveSettings(JSON.stringify(payload), function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            alert('配置已保存');
+            loadSettings();
+          } else {
+            alert('保存失败: ' + (resp.error || ''));
+          }
+        } catch (e) { alert('保存错误'); }
+      });
+    }
+
+    function testLLMConnection() {
+      if (!window.pybridge) return;
+      showLoading('测试 LLM 连接中...');
+      window.pybridge.testLLMConnection(function(result) {
+        hideLoading();
+        try {
+          var resp = JSON.parse(result);
+          if (resp.connected) {
+            alert('连接成功: ' + (resp.message || ''));
+          } else {
+            alert('连接失败: ' + (resp.message || ''));
+          }
+        } catch (e) { alert('测试错误'); }
+      });
+    }
+
+    function copyResourceUrl(url) {
+      if (!window.pybridge) return;
+      window.pybridge.copyToClipboard(url, function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            showCopiedToast('链接已复制到剪贴板');
+          } else {
+            showCopiedToast('复制失败', true);
+          }
+        } catch (e) { showCopiedToast('复制失败', true); }
+      });
+    }
+
+    function showCopiedToast(message, isError) {
+      var toast = document.createElement('div');
+      toast.textContent = message;
+      toast.style.cssText = 'position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: ' +
+        (isError ? 'rgba(231,76,60,0.9)' : 'rgba(46,204,113,0.9)') +
+        '; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; z-index: 10001; pointer-events: none;';
+      document.body.appendChild(toast);
+      setTimeout(function() {
+        toast.style.transition = 'opacity 0.3s';
+        toast.style.opacity = '0';
+        setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+      }, 1800);
+    }
+
+    /* ─── Import Panel ─── */
+    function toggleImportPanel() {
+      var panel = document.getElementById('import-panel');
+      if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function handleImportFile(input) {
+      var file = input.files[0];
+      if (!file) return;
+      var ext = file.name.split('.').pop().toLowerCase();
+      var formatSelect = document.getElementById('import-format');
+
+      // PDF/Word 走 base64 直传后端解析
+      if (ext === 'pdf' || ext === 'doc' || ext === 'docx') {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          // e.target.result 格式: data:application/pdf;base64,xxxx
+          var base64 = e.target.result.split(',')[1];
+          window._pendingImportFile = { name: file.name, base64: base64 };
+          var contentArea = document.getElementById('import-content');
+          contentArea.value = '[已选择文件: ' + file.name + ']\\n点击"导入"后，LLM 将自动解析文件内容并生成结构化经历。';
+          contentArea.readOnly = true;
+          if (formatSelect) formatSelect.disabled = true;
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      // 文本/标记文件走原有流程
+      window._pendingImportFile = null;
+      var contentArea = document.getElementById('import-content');
+      contentArea.readOnly = false;
+      if (formatSelect) formatSelect.disabled = false;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        contentArea.value = e.target.result;
+        if (ext === 'md') formatSelect.value = 'markdown';
+        else if (ext === 'json') formatSelect.value = 'json';
+        else formatSelect.value = 'text';
+      };
+      reader.readAsText(file);
+    }
+
+    function submitImport() {
+      // 如果有待导入的 PDF/Word 文件，走后端解析
+      if (window._pendingImportFile && window._pendingImportFile.base64) {
+        if (!window.pybridge) return;
+        showLoading('正在解析 ' + window._pendingImportFile.name + '...');
+        window.pybridge.importFile(
+          window._pendingImportFile.name,
+          window._pendingImportFile.base64,
+          function(result) {
+            hideLoading();
+            try {
+              var resp = JSON.parse(result);
+              if (resp.success) {
+                alert(resp.message || '导入成功，共 ' + (resp.count || 0) + ' 条经历');
+                resetImportPanel();
+                toggleImportPanel();
+                loadExperiencesFromBridge();
+              } else {
+                alert('导入失败: ' + (resp.error || ''));
+              }
+            } catch (e) { hideLoading(); alert('导入错误'); }
+          }
+        );
+        return;
+      }
+
+      var format = document.getElementById('import-format').value;
+      var content = document.getElementById('import-content').value.trim();
+      if (!content) { alert('请粘贴内容或选择文件'); return; }
+      if (!window.pybridge) return;
+      showLoading('正在导入...');
+      window.pybridge.importExperiences(format, JSON.stringify({content: content}), function(result) {
+        hideLoading();
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            alert('导入成功，共 ' + (resp.count || 0) + ' 条经历');
+            document.getElementById('import-content').value = '';
+            document.getElementById('import-file').value = '';
+            toggleImportPanel();
+            loadExperiencesFromBridge();
+          } else {
+            alert('导入失败: ' + (resp.error || ''));
+          }
+        } catch (e) { hideLoading(); alert('导入错误'); }
+      });
+    }
+
+    function resetImportPanel() {
+      window._pendingImportFile = null;
+      var contentArea = document.getElementById('import-content');
+      if (contentArea) { contentArea.value = ''; contentArea.readOnly = false; }
+      var fileInput = document.getElementById('import-file');
+      if (fileInput) fileInput.value = '';
+      var formatSelect = document.getElementById('import-format');
+      if (formatSelect) { formatSelect.value = 'text'; formatSelect.disabled = false; }
+    }
+
+    /* ─── Skills Page ─── */
+    var gSkills = [];
+    var gFilteredSkills = [];
+
+    function loadSkillsPage() {
+      if (!window.pybridge) return;
+      window.pybridge.getSkillGraph(function(result) {
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            gSkills = resp.data || [];
+            gFilteredSkills = gSkills.slice();
+            renderSkills(gFilteredSkills);
+          }
+        } catch (e) { console.error('getSkillGraph error', e); }
+      });
+    }
+
+    function renderSkills(list) {
+      var container = document.getElementById('skills-container');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!list || !list.length) {
+        container.innerHTML = '<div style="color: var(--text-tertiary); padding: 24px; text-align: center; grid-column: 1 / -1;">暂无技能数据</div>';
+        return;
+      }
+      list.forEach(function(skill) {
+        var card = document.createElement('div');
+        card.className = 'card';
+        card.style.cursor = 'pointer';
+        card.onclick = function() { showSkillDetail(skill); };
+        var prereqs = (skill.prerequisites || []).map(function(s){ return '<span class="pill">' + escapeHtml(s) + '</span>'; }).join('');
+        card.innerHTML =
+          '<div class="card-title">' + escapeHtml(skill.name || skill.id || '') + '</div>' +
+          '<div style="margin-top: 6px;"><span class="pill pill-accent">' + escapeHtml(skill.category || '未分类') + '</span></div>' +
+          '<div style="font-size: 13px; color: var(--text-secondary); margin-top: 10px; line-height: 1.5;">' + escapeHtml(skill.description || '') + '</div>' +
+          (prereqs ? '<div style="margin-top: 10px;"><div style="font-size: 11px; color: var(--text-quaternary); margin-bottom: 4px;">前置技能</div>' + prereqs + '</div>' : '');
+        container.appendChild(card);
+      });
+    }
+
+    function searchSkillsRealtime(query) {
+      if (!query.trim()) {
+        gFilteredSkills = gSkills.slice();
+      } else if (window.pybridge) {
+        window.pybridge.searchSkills(query, function(result) {
+          try {
+            var resp = JSON.parse(result);
+            if (resp.success) {
+              gFilteredSkills = resp.data || [];
+              filterSkillsByCategory(false);
+            }
+          } catch (e) { console.error('searchSkills error', e); }
+        });
+        return;
+      }
+      filterSkillsByCategory(false);
+    }
+
+    function filterSkillsByCategory(shouldRender) {
+      if (shouldRender !== false) shouldRender = true;
+      var cat = document.getElementById('skill-category-filter').value;
+      var list = gFilteredSkills;
+      if (cat) {
+        list = list.filter(function(s) { return (s.category || '').indexOf(cat) !== -1; });
+      }
+      if (shouldRender) renderSkills(list);
+    }
+
+    function showSkillDetail(skill) {
+      var modal = document.getElementById('skill-modal');
+      document.getElementById('skill-modal-title').textContent = skill.name || skill.id || '';
+      document.getElementById('skill-modal-tag').innerHTML = '<span class="pill pill-accent">' + escapeHtml(skill.category || '未分类') + '</span>';
+      document.getElementById('skill-modal-desc').textContent = skill.description || '暂无描述';
+
+      // 前置技能
+      var prereqs = skill.prerequisites || [];
+      var prereqsSection = document.getElementById('skill-modal-prereqs');
+      var prereqsList = document.getElementById('skill-modal-prereqs-list');
+      if (prereqs.length) {
+        prereqsSection.style.display = 'block';
+        prereqsList.innerHTML = prereqs.map(function(pid) {
+          var s = gSkills.find(function(x) { return x.id === pid; });
+          var name = s ? (s.name || s.id) : pid;
+          return '<span class="pill" onclick="clickSkillPill(\'' + escapeHtml(pid) + '\')">' + escapeHtml(name) + '</span>';
+        }).join('');
+      } else {
+        prereqsSection.style.display = 'none';
+      }
+
+      // 关联技能
+      var related = skill.related || skill.connected || [];
+      var relatedSection = document.getElementById('skill-modal-related');
+      var relatedList = document.getElementById('skill-modal-related-list');
+      if (related.length) {
+        relatedSection.style.display = 'block';
+        relatedList.innerHTML = related.map(function(r) {
+          var rid = typeof r === 'string' ? r : (r.id || '');
+          var rname = typeof r === 'string' ? r : (r.name || r.id || '');
+          var rs = gSkills.find(function(x) { return x.id === rid; });
+          if (rs) rname = rs.name || rs.id;
+          return '<span class="pill" onclick="clickSkillPill(\'' + escapeHtml(rid) + '\')">' + escapeHtml(rname) + '</span>';
+        }).join('');
+      } else {
+        relatedSection.style.display = 'none';
+      }
+
+      // 学习资源
+      var learningSection = document.getElementById('skill-modal-learning');
+      var learningList = document.getElementById('skill-modal-learning-list');
+      var resources = skill.resources || [];
+      if (resources.length) {
+        learningSection.style.display = 'block';
+        learningList.innerHTML = resources.map(function(r) {
+          var url = r.url || '';
+          var hours = r.estimated_hours || 0;
+          var typeLabel = r.type || '资源';
+          var source = r.source || '';
+          var html = '<div style="padding: 10px 12px; background: var(--bg-secondary); border-radius: 8px;">' +
+            '<div style="display: flex; justify-content: space-between; align-items: flex-start;">' +
+              '<div style="font-size: 14px; font-weight: 500; color: var(--text-primary);">' + escapeHtml(r.title || '') + '</div>' +
+              '<span style="font-size: 11px; color: var(--text-quaternary); flex-shrink: 0; margin-left: 8px;">' + escapeHtml(typeLabel) + '</span>' +
+            '</div>' +
+            '<div style="font-size: 12px; color: var(--text-tertiary); margin-top: 4px;">' + escapeHtml(source) + (hours ? ' · 预估 ' + hours + ' 小时' : '') + '</div>';
+          if (url) {
+            html += '<button class="btn btn-ghost btn-sm" onclick="copyResourceUrl(\'' + escapeHtml(url).replace(/'/g, "\\'") + '\')" style="margin-top: 6px; display: inline-block;">复制链接 →</button>';
+          }
+          html += '</div>';
+          return html;
+        }).join('');
+      } else {
+        learningSection.style.display = 'none';
+        learningList.innerHTML = '';
+      }
+
+      // 保存当前技能到按钮
+      document.getElementById('skill-modal-path-btn').dataset.skillName = skill.name || skill.id || '';
+
+      modal.classList.add('active');
+    }
+
+    function closeSkillModal() {
+      document.getElementById('skill-modal').classList.remove('active');
+    }
+
+    function clickSkillPill(skillId) {
+      var skill = gSkills.find(function(s) { return s.id === skillId; });
+      if (!skill) return;
+      closeSkillModal();
+      setTimeout(function() { showSkillDetail(skill); }, 50);
+    }
+
+    function generatePathFromModal() {
+      var skillName = document.getElementById('skill-modal-path-btn').dataset.skillName;
+      closeSkillModal();
+      switchPage('learning');
+      setTimeout(function() {
+        var input = document.getElementById('learning-skill-input');
+        if (input) input.value = skillName;
+        generateLearningPath();
+      }, 100);
+    }
+
+    /* ─── Learning Page ─── */
+    function loadLearningPage() {
+      renderLearningResources(window._learningResources || []);
+      // 支持 URL 参数 skill 和 auto 自动触发
+      var params = new URLSearchParams(window.location.search);
+      var skill = params.get('skill');
+      var auto = params.get('auto');
+      if (skill) {
+        var input = document.getElementById('learning-skill-input');
+        if (input) input.value = skill;
+        if (auto === '1') {
+          generateLearningPath();
+        }
+      }
+    }
+
+    function generateLearningPath() {
+      var input = document.getElementById('learning-skill-input');
+      var skill = input ? input.value.trim() : '';
+      if (!skill) { showError('请输入技能名称', ''); return; }
+      if (!window.pybridge) return;
+      showLoading('正在生成学习路径...');
+      window.pybridge.getLearningPath(skill, function(result) {
+        hideLoading();
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            window._learningResources = resp.data || [];
+            renderLearningResources(window._learningResources);
+          } else {
+            showError('生成失败', resp.error || '');
+          }
+        } catch (e) { hideLoading(); showError('生成错误', ''); }
+      });
+    }
+
+    function renderLearningResources(list) {
+      var container = document.getElementById('learning-resources-container');
+      if (!container) return;
+      if (!list || !list.length) {
+        container.innerHTML = '<div style="color: var(--text-tertiary); padding: 24px; text-align: center;">暂无学习资源</div>';
+        return;
+      }
+      var html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+      list.forEach(function(item, idx) {
+        var status = item.status || '待学习';
+        var statusClass = status === 'completed' ? 'pill-success' : (status === 'in_progress' ? 'pill-accent' : '');
+        var url = item.url || '';
+        var steps = item.steps || [];
+        var searchUrl = 'https://search.bilibili.com/all?keyword=' + encodeURIComponent((item.title || '') + ' ' + (item.type || ''));
+        html +=
+          '<div class="card" style="margin-bottom: 0;">' +
+            '<div style="display: flex; justify-content: space-between; align-items: flex-start;">' +
+              '<div>' +
+                '<div class="card-title" style="font-size: 14px;">' + escapeHtml(item.title || '') + '</div>' +
+                '<div style="font-size: 12px; color: var(--text-tertiary); margin-top: 4px;">' + escapeHtml(item.type || '') + ' · ' + escapeHtml(item.duration || '') + ' · 优先级: ' + escapeHtml(String(item.priority || '')) + '</div>' +
+              '</div>' +
+              '<select class="form-select" style="width: 100px; font-size: 12px;" onchange="updateLearningStatus(' + idx + ', this.value)">' +
+                '<option value="pending" ' + (status==='pending'?'selected':'') + '>待学习</option>' +
+                '<option value="in_progress" ' + (status==='in_progress'?'selected':'') + '>学习中</option>' +
+                '<option value="completed" ' + (status==='completed'?'selected':'') + '>已完成</option>' +
+              '</select>' +
+            '</div>' +
+            (item.description ? '<div style="font-size: 13px; color: var(--text-secondary); margin-top: 10px; line-height: 1.5;">' + escapeHtml(item.description) + '</div>' : '') +
+            (url ? '<button class="btn btn-ghost btn-sm" onclick="copyResourceUrl(\'' + escapeHtml(url).replace(/'/g, "\\'") + '\')">复制链接 →</button>' : '<button class="btn btn-ghost btn-sm" onclick="copyResourceUrl(\'' + searchUrl.replace(/'/g, "\\'") + '\')">Bilibili 搜索 →</button>') +
+            (steps.length ? '<div style="margin-top: 10px;"><div style="font-size: 11px; color: var(--text-quaternary); margin-bottom: 4px;">学习步骤</div><ol style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; padding-left: 18px;">' + steps.map(function(s){ return '<li>' + escapeHtml(s) + '</li>'; }).join('') + '</ol></div>' : '') +
+          '</div>';
+      });
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function updateLearningStatus(idx, status) {
+      if (window._learningResources && window._learningResources[idx]) {
+        window._learningResources[idx].status = status;
+      }
+    }
+
+    /* ——— 学习路径按来源分类 ——— */
+    var _learningPathsBySource = null;
+    var _currentLpFilter = 'all';
+
+    function loadLearningPathsBySource() {
+      if (!window.pybridge) return;
+      showLoading('加载学习路径...');
+      window.pybridge.getLearningPathsBySource(function(result) {
+        hideLoading();
+        try {
+          var resp = JSON.parse(result);
+          if (resp.success) {
+            _learningPathsBySource = resp.data || {};
+            filterLearningPaths(_currentLpFilter);
+          }
+        } catch (e) { console.error('getLearningPathsBySource error', e); }
+      });
+    }
+
+    function filterLearningPaths(source) {
+      _currentLpFilter = source;
+      // 更新按钮样式
+      ['all'].forEach(function(k) {
+        var btn = document.getElementById('lp-filter-' + k);
+        if (btn) {
+          if (k === source) {
+            btn.style.fontWeight = '600';
+            btn.style.background = 'var(--bg-tertiary)';
+          } else {
+            btn.style.fontWeight = '';
+            btn.style.background = '';
+          }
+        }
+      });
+      if (!_learningPathsBySource) {
+        loadLearningPathsBySource();
+        return;
+      }
+      var allPaths = [];
+      if (source === 'all') {
+        Object.keys(_learningPathsBySource).forEach(function(k) {
+          allPaths = allPaths.concat(_learningPathsBySource[k] || []);
+        });
+      } else {
+        allPaths = _learningPathsBySource[source] || [];
+      }
+      allPaths = allPaths.map(function(path, idx) {
+        var copy = Object.assign({}, path);
+        copy._renderIndex = idx;
+        return copy;
+      });
+      allPaths.sort(function(a, b) {
+        var aTime = Date.parse(a.created_at || a.updated_at || '') || 0;
+        var bTime = Date.parse(b.created_at || b.updated_at || '') || 0;
+        if (aTime !== bTime) return bTime - aTime;
+        return (b._renderIndex || 0) - (a._renderIndex || 0);
+      });
+      // 渲染路径列表
+      renderLearningPathList(allPaths);
+    }
+
+    function renderLearningPathList(paths) {
+      var container = document.getElementById('learning-resources-container');
+      if (!container) return;
+      if (!paths || !paths.length) {
+        container.innerHTML = '<div style="color: var(--text-tertiary); padding: 24px; text-align: center;">暂无该来源的学习路径</div>';
+        return;
+      }
+      var html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+      paths.forEach(function(path) {
+        var sourceType = path.source_type || 'manual';
+        var sourceLabel = {skill_graph: '技能图谱', jd_gap: 'JD 补充', manual: '手动创建'}[sourceType] || sourceType;
+        var items = path.items || [];
+        var itemCount = items.length;
+        html +=
+          '<div class="card" style="margin-bottom: 0;">' +
+            '<div style="display: flex; justify-content: space-between; align-items: flex-start;">' +
+              '<div>' +
+                '<div class="card-title" style="font-size: 14px;">' + escapeHtml(path.target_gap || '未命名路径') + '</div>' +
+                '<div style="font-size: 12px; color: var(--text-tertiary); margin-top: 4px;">' + escapeHtml(sourceLabel) + ' · ' + itemCount + ' 项资源 · ' + escapeHtml(path.status || 'active') + '</div>' +
+              '</div>' +
+              '<span class="pill">' + escapeHtml(sourceLabel) + '</span>' +
+            '</div>' +
+            (items.length ? '<div style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px;">' + items.map(function(item) {
+              var url = item.url || '';
+              return '<div style="font-size: 13px; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: var(--bg-secondary); border-radius: 6px;">' +
+                '<span>' + escapeHtml(item.title || '') + '</span>' +
+                (url ? '<button class="btn btn-ghost btn-sm" onclick="copyResourceUrl(\'' + escapeHtml(url).replace(/'/g, "\\'") + '\')" style="font-size: 12px; white-space: nowrap;">复制链接 →</button>' : '') +
+              '</div>';
+            }).join('') + '</div>' : '') +
+          '</div>';
+      });
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    /* ─── Page init ─── */
+    document.addEventListener('DOMContentLoaded', function() {
+      initBridge();
+      // URL hash routing
+      var page = new URLSearchParams(window.location.search).get('page');
+      if (page) switchPage(page, null);
+    });
+  </script>
+</body>
+</html>

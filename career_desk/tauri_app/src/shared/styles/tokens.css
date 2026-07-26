@@ -1,0 +1,5 @@
+:root { font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:#2f2e2b; background:#fff; --canvas:#fff; --sidebar:#f7f6f3; --surface:#f1f0ed; --ink:#2f2e2b; --ink-strong:#191918; --ink-secondary:#6f6d67; --ink-muted:#9b9992; --border:#e5e3de; --border-strong:#cfccc5; --accent:#2463a6; --accent-hover:#1d528b; --accent-soft:#e8f0f8; --success:#2f7d4a; --warning:#9a6718; --danger:#b33a3a; --shadow:0 8px 24px rgb(47 46 43 / 12%); }
+* { box-sizing:border-box; }
+body { margin:0; min-width:320px; min-height:100dvh; }
+button, input, textarea, select { font:inherit; }
+button:focus-visible, a:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }

@@ -1,0 +1,31 @@
+{
+  "name": "careercraft-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run --coverage",
+    "tauri": "tauri",
+    "desktop:dev": "tauri dev --features desktop",
+    "desktop:build": "npm run build && tauri build --features desktop",
+    "desktop:build:e2e": "tsc --noEmit && vite build --mode e2e && tauri build --debug --features wdio --no-bundle --config src-tauri/tauri.wdio.conf.json",
+    "test:desktop:e2e": "node scripts/embedded-smoke.mjs",
+    "verify:production-isolation": "powershell -ExecutionPolicy Bypass -File scripts/verify_production_isolation.ps1",
+    "audit:ci": "npm audit --audit-level=high",
+    "coverage:aggregate": "node scripts/coverage-aggregate.mjs"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.8.0",
+    "@tauri-apps/plugin-dialog": "^2.7.2"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.8.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0",
+    "vitest": "^3.2.4"
+  }
+}

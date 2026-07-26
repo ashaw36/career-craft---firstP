@@ -1,0 +1,14 @@
+[
+  {"id":"E2E-01","ccFr":["CC-FR-001"],"title":"native startup and IPC health","kind":"native","stateEffect":"none","assertions":["health.status=ok","brand visible"]},
+  {"id":"E2E-02","ccFr":["CC-FR-002","CC-FR-003","CC-FR-004"],"title":"persist confirmed experience","kind":"write","stateEffect":"experience inserted into SQLite","assertions":["record can be queried"]},
+  {"id":"E2E-03","ccFr":["CC-FR-002","CC-FR-003"],"title":"render persisted experience","kind":"ui","stateEffect":"none","assertions":["production UI shows title"]},
+  {"id":"E2E-04","ccFr":["CC-FR-005","CC-FR-006"],"title":"create and render persona","kind":"write","stateEffect":"persona inserted into SQLite","assertions":["production UI shows persona"]},
+  {"id":"E2E-05","ccFr":["CC-FR-001","CC-FR-002","CC-FR-005"],"title":"durability across application restart","kind":"restart","stateEffect":"native session restarted","assertions":["experience survives","persona survives"]},
+  {"id":"E2E-06","ccFr":["CC-FR-009","CC-FR-010"],"title":"persist parsed job","kind":"write","stateEffect":"job inserted into SQLite","assertions":["job can be listed"]},
+  {"id":"E2E-07","ccFr":["CC-FR-010","CC-FR-011"],"title":"create evidence-backed match","kind":"write","stateEffect":"job match inserted into SQLite","assertions":["score is numeric","status is new"]},
+  {"id":"E2E-08","ccFr":["CC-FR-010","CC-FR-011"],"title":"persist status audit trail","kind":"write","stateEffect":"status event appended","assertions":["new to interested timeline"]},
+  {"id":"E2E-09","ccFr":["CC-FR-019","CC-FR-020"],"title":"cancel native background task","kind":"cancel","stateEffect":"task state becomes cancelled","assertions":["cancelled envelope"]},
+  {"id":"E2E-10","ccFr":["CC-FR-012","CC-FR-013"],"title":"external URL capability and token security","kind":"external","stateEffect":"optional OS browser handoff","assertions":["forged token rejected","authorized handoff when opted in"]},
+  {"id":"E2E-11","ccFr":["CC-FR-009","CC-FR-010"],"title":"validation and optimistic-lock errors","kind":"error","stateEffect":"none","assertions":["blank JD rejected","stale write conflicts"]},
+  {"id":"E2E-12","ccFr":["CC-FR-002","CC-FR-005","CC-FR-009"],"title":"durable cleanup","kind":"delete","stateEffect":"test records deleted from SQLite","assertions":["experience absent","persona absent"]}
+]

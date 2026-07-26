@@ -1,0 +1,6 @@
+{
+  "experiences":[{"id":"00000000-0000-4000-8000-000000000001","user_id":"default","type":"work","title":"数据产品经理","organization":"示例科技","start_date":"2022-01-01","end_date":null,"raw_description":"负责指标平台，原文不可被 AI 覆盖。","structured_achievements":["交付周期缩短 30%"],"skills_demonstrated":["产品规划","SQL"],"metrics":[{"name":"周期","value":"-30%"}],"status":"confirmed","version":1,"created_at":"2026-01-01 00:00:00","updated_at":"2026-01-01 00:00:00"}],
+  "personas":[{"id":"00000000-0000-4000-8000-000000000002","user_id":"default","name":"数据产品","is_default":true,"identity_statement":"以数据驱动产品增长","career_narrative":null,"tone_style":"data_driven","capability_weights":{"产品规划":0.6,"SQL":0.4},"target_job_profiles":["数据产品经理"],"max_experiences":5,"preferred_model":null,"created_at":"2026-01-01 00:00:00","updated_at":"2026-01-01 00:00:00"}],
+  "role_experience_weights":[{"id":"00000000-0000-4000-8000-000000000003","persona_id":"00000000-0000-4000-8000-000000000002","experience_id":"00000000-0000-4000-8000-000000000001","relevance_score":1.0,"reframed_summary":null,"highlighted_skills":["产品规划","SQL"],"user_overridden":false,"created_at":"2026-01-01 00:00:00","updated_at":"2026-01-01 00:00:00"}],
+  "skill_nodes":[],"job_descs":[],"job_matches":[],"job_match_experience_reframes":[],"learning_paths":[],"uploaded_files":[]
+}

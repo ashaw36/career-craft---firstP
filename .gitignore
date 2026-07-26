@@ -1,0 +1,53 @@
+# Dependencies & build
+node_modules/
+.venv/
+venv/
+dist/
+coverage/
+artifacts/
+target/
+**/src-tauri/target/
+**/src-tauri/target-*/
+.release/
+release/
+.tools/
+logs/
+*.log
+startup-*.log
+
+# Local / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+**/credential*
+*.localbak
+
+# IDE / agent
+.cursor/
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Archives & local dumps
+*.zip
+*.7z
+*.rar
+
+# Built installers / release dumps
+*.exe
+*.msi
+*.dmg
+**/成品/
+**/产品/
+
+# OS / temp
+__pycache__/
+*.pyc
+.cache/
+tmp/
+temp/

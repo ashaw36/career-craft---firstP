@@ -1,0 +1,21 @@
+{
+  "contractVersion": "1.0.0",
+  "source": "src/models/entities.py",
+  "tables": [
+    {"name":"experiences","requirements":["CC-FR-001","CC-FR-002","CC-FR-003"],"primaryKey":["id"],"foreignKeys":[],"jsonColumns":["structured_achievements","skills_demonstrated","metrics"]},
+    {"name":"personas","requirements":["CC-FR-004","CC-FR-005"],"primaryKey":["id"],"foreignKeys":[],"jsonColumns":["capability_weights","target_job_profiles"]},
+    {"name":"role_experience_weights","requirements":["CC-FR-005"],"primaryKey":["id"],"foreignKeys":["persona_id->personas.id CASCADE","experience_id->experiences.id CASCADE"],"jsonColumns":["highlighted_skills"]},
+    {"name":"skill_nodes","requirements":["CC-FR-014"],"primaryKey":["id"],"unique":["name"],"foreignKeys":["parent_id->skill_nodes.id SET NULL"],"jsonColumns":["aliases","resources"]},
+    {"name":"job_descs","requirements":["CC-FR-009"],"primaryKey":["id"],"foreignKeys":[],"jsonColumns":["responsibilities","benefits","parsed_skills"]},
+    {"name":"job_matches","requirements":["CC-FR-010","CC-FR-011","CC-FR-013","CC-FR-017"],"primaryKey":["id"],"foreignKeys":["persona_id->personas.id CASCADE","job_desc_id->job_descs.id CASCADE"],"jsonColumns":["matched_skills","missing_skills","score_breakdown"]},
+    {"name":"job_match_experience_reframes","requirements":["CC-FR-012"],"primaryKey":["id"],"foreignKeys":["job_match_id->job_matches.id CASCADE","experience_id->experiences.id CASCADE"],"jsonColumns":[]},
+    {"name":"learning_paths","requirements":["CC-FR-015","CC-FR-016"],"primaryKey":["id"],"foreignKeys":["persona_id->personas.id CASCADE"],"jsonColumns":["items"]},
+    {"name":"uploaded_files","requirements":["CC-FR-003"],"primaryKey":["id"],"foreignKeys":[],"jsonColumns":[]}
+  ],
+  "knownLegacyQuirks": [
+    "vector_embedding is annotated bytes but persisted as VARCHAR(36)",
+    "role_experience_weights has no database unique constraint on persona_id+experience_id",
+    "all ORM defaults other than CURRENT_TIMESTAMP are client-side and absent from DDL",
+    "foreign_keys must be enabled per SQLite connection"
+  ]
+}

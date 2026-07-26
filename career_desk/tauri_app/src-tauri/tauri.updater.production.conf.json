@@ -1,0 +1,10 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "bundle": { "createUpdaterArtifacts": true },
+  "plugins": {
+    "updater": {
+      "endpoints": ["https://REPLACE-WITH-OWNED-UPDATE-HOST/{{target}}/{{arch}}/{{current_version}}"],
+      "pubkey": "REPLACE-WITH-MINISIGN-PUBLIC-KEY"
+    }
+  }
+}

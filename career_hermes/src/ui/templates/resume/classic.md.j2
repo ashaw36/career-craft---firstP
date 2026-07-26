@@ -1,0 +1,108 @@
+# {{ name }}
+
+{% if identity_statement %}
+> {{ identity_statement }}
+{% endif %}
+
+---
+
+{% if career_narrative %}
+## 个人摘要
+
+{{ career_narrative }}
+{% endif %}
+
+{% if target_job_profiles %}
+## 目标岗位
+
+{% for profile in target_job_profiles %}
+- {{ profile }}
+{% endfor %}
+{% endif %}
+
+## 工作经历
+
+{% for exp in work_experiences %}
+### {{ exp.title }}
+
+**{{ exp.organization or '' }}** | {{ exp.period }}
+
+{% if exp.description %}
+{{ exp.description }}
+{% endif %}
+
+{% if exp.metrics %}
+| 指标 | 数值 |
+|------|------|
+{% for m in exp.metrics %}
+| {{ m.metric }} | {{ m.value }}{{ m.unit }} |
+{% endfor %}
+{% endif %}
+
+{% if exp.achievements %}
+{% for ach in exp.achievements %}
+- {{ ach }}
+{% endfor %}
+{% endif %}
+
+{% if exp.skills %}
+*关键技能：{{ exp.skills | join('、') }}*
+{% endif %}
+
+---
+
+{% endfor %}
+
+{% if project_experiences %}
+## 项目经历
+
+{% for exp in project_experiences %}
+### {{ exp.title }}
+
+**{{ exp.organization or '' }}** | {{ exp.period }}
+
+{% if exp.description %}
+{{ exp.description }}
+{% endif %}
+
+{% if exp.metrics %}
+| 指标 | 数值 |
+|------|------|
+{% for m in exp.metrics %}
+| {{ m.metric }} | {{ m.value }}{{ m.unit }} |
+{% endfor %}
+{% endif %}
+
+{% if exp.achievements %}
+{% for ach in exp.achievements %}
+- {{ ach }}
+{% endfor %}
+{% endif %}
+
+{% if exp.skills %}
+*关键技能：{{ exp.skills | join('、') }}*
+{% endif %}
+
+---
+
+{% endfor %}
+{% endif %}
+
+{% if education_experiences %}
+## 教育背景
+
+{% for exp in education_experiences %}
+### {{ exp.title }}
+
+**{{ exp.organization or '' }}** | {{ exp.period }}
+
+{% if exp.description %}
+{{ exp.description }}
+{% endif %}
+
+{% endfor %}
+{% endif %}
+
+---
+
+*由 CareerCraft Agent 生成于 {{ generated_at }}*
