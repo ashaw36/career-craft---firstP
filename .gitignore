@@ -24,6 +24,11 @@ startup-*.log
 credentials.json
 **/credential*
 *.localbak
+*.db
+*.sqlite
+*.sqlite3
+.coverage
+**/coverage/
 
 # IDE / agent
 .cursor/
