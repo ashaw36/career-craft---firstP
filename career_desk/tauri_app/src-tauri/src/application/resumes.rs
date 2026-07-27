@@ -52,7 +52,7 @@ pub fn allocate_achievements_by_weight(achievements: &[String], score: f64) -> V
         n
     } else if score >= 0.5 {
         // Keep about two-thirds, but never ask for more than available.
-        ((n * 2 + 2) / 3).max(1)
+        (n * 2).div_ceil(3).max(1)
     } else if score >= 0.25 {
         n.div_ceil(2).max(1)
     } else {

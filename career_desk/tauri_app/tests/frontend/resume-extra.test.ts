@@ -2,6 +2,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ResumeActions, WorkspaceDataSource, WorkspaceSnapshot } from "../../src/api/data-source";
 import { bind } from "../../src/features/actions/resume-extra";
 import { TaskStore } from "../../src/shared/state/tasks";
+import { save } from "@tauri-apps/plugin-dialog";
+import { api } from "../../src/api/client";
+
+vi.mock("@tauri-apps/plugin-dialog", () => ({ save: vi.fn().mockResolvedValue("D:/tmp/resume.md") }));
+vi.mock("../../src/api/client", () => ({
+  api: { command: vi.fn().mockResolvedValue({ success: true, data: { saved: true } }) },
+  unwrap: (result: { success: boolean; data?: unknown; error?: unknown }) => {
+    if (!result.success) throw result.error;
+    return result.data;
+  },
+}));
 
 const snapshot = {
   experiences: [],
@@ -45,7 +56,7 @@ const launch = async (root: HTMLElement) => {
 describe("resume chat two-phase confirmation", () => {
   beforeEach(() => localStorage.removeItem("careercraft:selected-persona"));
   it("previews then commits the same proposal credential against its base version", async () => {
-    const chat = vi.fn().mockResolvedValue({ id: "v-new" });
+    const chat = vi.fn().mockResolvedValue({ id: "v-new", versionId: "v-new", markdown: "# Saved" });
     const { root, tasks } = setup(chat, {
       taskId: "task-1",
       state: "completed",
@@ -92,7 +103,7 @@ describe("resume chat two-phase confirmation", () => {
 });
 
 describe("Markdown export", () => {
-  it("downloads the persisted preview without generating a new version", async () => {
+  it("writes the persisted preview through the native save dialog without generating", async () => {
     const root = document.createElement("div");
     root.innerHTML =
       '<select data-resume-persona><option value="p1" selected>P</option></select><button data-action="export-markdown">导出 Markdown</button>';
@@ -115,15 +126,16 @@ describe("Markdown export", () => {
       load,
       generateResume,
       chatRefineResume: vi.fn(),
+      listResumeVersions: vi.fn().mockResolvedValue([{ markdown: "# Persisted" }]),
     } as unknown as WorkspaceDataSource & ResumeActions;
-    const createObjectURL = vi.fn().mockReturnValue("blob:test");
-    vi.stubGlobal("URL", { createObjectURL, revokeObjectURL: vi.fn() });
-    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
     bind(root, source, new TaskStore());
     root.querySelector<HTMLButtonElement>('[data-action="export-markdown"]')!.click();
     await wait();
     expect(generateResume).not.toHaveBeenCalled();
-    expect(createObjectURL).toHaveBeenCalledOnce();
-    expect(click).toHaveBeenCalledOnce();
+    expect(save).toHaveBeenCalledOnce();
+    expect(api.command).toHaveBeenCalledWith("write_text_file", {
+      destinationPath: "D:/tmp/resume.md",
+      content: "# Persisted",
+    });
   });
 });

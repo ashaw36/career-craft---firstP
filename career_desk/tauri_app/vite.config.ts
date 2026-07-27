@@ -7,8 +7,12 @@ const coverageRunDirectory = `coverage/run-${Date.now()}-${Math.random().toStrin
 
 export default defineConfig({
   clearScreen: false,
-  server: { strictPort: true, port: 1420, host: "127.0.0.1" },
+  server: { strictPort: true, port: 1420, host: "127.0.0.1", hmr: false },
   envPrefix: ["VITE_", "TAURI_"],
+  // The desktop shell imports Tauri APIs at runtime. Avoid Vite's eager
+  // dependency crawler on Windows; it can leave the dev HTTP listener alive
+  // while blocking every request when the optimizer worker stalls.
+  optimizeDeps: { noDiscovery: true },
   build: { target: "es2021", sourcemap: true, emptyOutDir: true, assetsDir: "assets" },
   test: {
     environment: "jsdom",

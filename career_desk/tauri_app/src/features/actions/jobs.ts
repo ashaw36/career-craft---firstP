@@ -67,15 +67,23 @@ export function bind(
   });
 
   root.querySelectorAll<HTMLElement>("[data-learn-skill]").forEach((node) => {
-    node.addEventListener("click", () => {
+    node.addEventListener("click", async () => {
       const skill = node.dataset.learnSkill ?? "";
-      if (skill) localStorage.setItem("careercraft:focus-skill", skill);
+      if (skill) {
+        const jobId = node.closest<HTMLElement>("[data-job-detail]")?.dataset.jobDetail ?? "";
+        const snapshot = await source.load();
+        const job = snapshot.jobs.find(item => item.id === jobId);
+        const selected = localStorage.getItem("careercraft:selected-persona");
+        const personaId = job?.personaId ?? (snapshot.personas.some(p => p.id === selected) ? selected : snapshot.personas[0]?.id) ?? "";
+        localStorage.setItem("careercraft:learning-context", JSON.stringify({ skill, personaId, jobMatchId: job?.matchId ?? "", origin: "job_gap" }));
+        localStorage.setItem("careercraft:focus-skill", skill);
+      }
       report(tasks, "安排学习", "completed", skill ? `已记下「${skill}」，可到学习路径生成计划。` : "请到学习路径继续。");
       navigate?.("learning");
     });
   });
 
-  root.querySelectorAll<HTMLElement>("[data-job-what-if]").forEach((node) => {
+  root.querySelectorAll<HTMLElement>("[data-job-what-if-legacy]").forEach((node) => {
     node.addEventListener("click", async () => {
       const id = node.dataset.jobWhatIf ?? "";
       const job = (await source.load()).jobs.find((x) => x.id === id);
@@ -135,6 +143,29 @@ export function bind(
       });
     });
   });
+
+  root.querySelectorAll<HTMLElement>("[data-job-what-if]").forEach(node => node.addEventListener("click", async () => {
+    const snapshot = await source.load();
+    const job = snapshot.jobs.find(x => x.id === node.dataset.jobWhatIf);
+    const personaId = job?.personaId ?? localStorage.getItem("careercraft:selected-persona") ?? snapshot.personas[0]?.id;
+    if (!job?.matchId || !personaId) { report(tasks,"假设分析","failed","请先选择角色并完成一次岗位匹配分析。"); return; }
+    const requestedSkill = localStorage.getItem("careercraft:what-if-skill") ?? "";
+    const hypothetical = job.missing.some(skill => skill.toLowerCase() === requestedSkill.toLowerCase()) ? requestedSkill : job.missing[0] ?? "";
+    localStorage.removeItem("careercraft:what-if-skill");
+    root.insertAdjacentHTML("beforeend", renderWhatIfDialog({required:[...job.matched,...job.missing].join(", "),current:job.matched.join(", "),hypothetical}));
+    const form=root.querySelector<HTMLFormElement>("[data-what-if-form]"); if(!form)return;
+    form.querySelector("[data-close-overlay]")?.addEventListener("click",()=>form.closest(".modal-backdrop")?.remove());
+    const output=document.createElement("output"); output.dataset.whatIfResult="true"; output.setAttribute("aria-live","polite"); form.querySelector(".dialog-actions")?.before(output);
+    form.querySelectorAll<HTMLInputElement>('[name="required"],[name="current"]').forEach(input=>{input.readOnly=true;input.setAttribute("aria-readonly","true")});
+    let request=0,timer=0,last:Record<string,unknown>|undefined;
+    const skills=()=>String(new FormData(form).get("hypothetical")??"").split(/[,，]/).map(x=>x.trim()).filter(Boolean);
+    const calculate=async()=>{const own=++request;try{const result=await source.simulateJobWhatIf(personaId,job.matchId!,skills()) as Record<string,unknown>;if(own!==request)return;last=result;const before=result.baselineBreakdown as Record<string,unknown>|undefined,after=result.simulatedBreakdown as Record<string,unknown>|undefined,missing=Array.isArray(result.remainingMissing)?result.remainingMissing.map(String):[];output.textContent=`总匹配 ${result.baselineScore} → ${result.simulatedScore}（${Number(result.delta)>=0?"+":""}${result.delta}）；技能分项 ${before?.skills??0} → ${after?.skills??0}${missing.length?`；仍缺：${missing.join("、")}`:"；岗位技能要求已覆盖"}。假设掌握不等于已有项目证据。`;}catch(error){if(own===request)output.textContent=`暂时无法计算：${(error as Error).message}`}};
+    form.addEventListener("input",()=>{clearTimeout(timer);timer=window.setTimeout(calculate,150)});
+    form.addEventListener("submit",event=>{event.preventDefault();void calculate()});
+    const confirm=document.createElement("button");confirm.type="button";confirm.className="primary";confirm.dataset.confirmWhatIfLearning="true";confirm.textContent="据此生成学习路径";form.querySelector(".dialog-actions")?.append(confirm);
+    confirm.addEventListener("click",async()=>{if(!last)await calculate();const chosen=Array.isArray(last?.addedSkills)?last!.addedSkills.map(String):skills();if(!chosen.length)return;localStorage.setItem("careercraft:learning-context",JSON.stringify({skill:chosen[0],skills:chosen,personaId,jobMatchId:job.matchId,origin:"what_if"}));localStorage.setItem("careercraft:focus-skill",chosen[0]!);form.closest(".modal-backdrop")?.remove();navigate?.("learning")});
+    void calculate();
+  }));
 
   // Keep selected job id in sync when page first paints with a default.
   const selected = root.querySelector<HTMLElement>("[data-job-detail]");

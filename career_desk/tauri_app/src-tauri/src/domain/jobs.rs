@@ -49,22 +49,22 @@ fn overlap_ratio(expected: &[String], actual: &[String]) -> f32 {
     expected.intersection(&actual).count() as f32 / expected.len() as f32
 }
 
+pub fn skill_match(required: &[String], actual: &[String]) -> (f32, Vec<String>, Vec<String>) {
+    let required = normalized(required);
+    let actual = normalized(actual);
+    let matched = required.intersection(&actual).cloned().collect::<Vec<_>>();
+    let missing = required.difference(&actual).cloned().collect::<Vec<_>>();
+    let ratio = if required.is_empty() { 1.0 } else { matched.len() as f32 / required.len() as f32 };
+    (ratio * 50.0, matched, missing)
+}
+
 /// Stable, deterministic 50/25/15/10 scoring required by CC-FR-010.
 pub fn score_match(job: &ParsedJob, candidate: &CandidateEvidence) -> MatchBreakdown {
-    let required = normalized(&job.required_skills);
-    let actual = normalized(&candidate.skills);
-    let matched_skills = required.intersection(&actual).cloned().collect::<Vec<_>>();
-    let missing_skills = required.difference(&actual).cloned().collect::<Vec<_>>();
-    let skill_ratio = if required.is_empty() {
-        1.0
-    } else {
-        matched_skills.len() as f32 / required.len() as f32
-    };
+    let (skill_score, matched_skills, missing_skills) = skill_match(&job.required_skills, &candidate.skills);
     let experience_ratio = match job.minimum_years {
         None | Some(0.0) => 1.0,
         Some(years) => (candidate.years_experience / years).clamp(0.0, 1.0),
     };
-    let skill_score = skill_ratio * 50.0;
     let experience_score = experience_ratio * 25.0;
     let industry_score = overlap_ratio(&job.industry_terms, &candidate.industry_terms) * 15.0;
     let education_score = education_ratio(&job.education_terms, &candidate.education_terms) * 10.0;
@@ -208,6 +208,17 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(score_match(&job, &candidate).education_score, 0.0)
+    }
+
+    #[test]
+    fn what_if_skill_component_uses_the_same_fifty_point_scale() {
+        let required = vec!["Rust".into(), "SQL".into()];
+        let (before, _, missing) = skill_match(&required, &["Rust".into()]);
+        let (after, matched, remaining) = skill_match(&required, &["Rust".into(), "SQL".into()]);
+        assert_eq!((before, after), (25.0, 50.0));
+        assert_eq!(missing, vec!["sql"]);
+        assert_eq!(matched, vec!["rust", "sql"]);
+        assert!(remaining.is_empty());
     }
 
     #[test]

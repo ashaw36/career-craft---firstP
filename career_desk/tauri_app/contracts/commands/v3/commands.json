@@ -1,8 +1,8 @@
 {
   "contractVersion": "3.0.0",
   "extends": "../v2/commands.json",
-  "topLevelCommandsAdded": [["previewResume", ["personaId", "template"], "CC-FR-006", "RES-PREVIEW-001"],["getJobStatusEvents",["matchId"],"CC-FR-011","JOB-AUDIT-001"],["checkUpdate",[],"CC-FR-024","UPD-001"],["downloadUpdate",[],"CC-FR-024","UPD-002"],["installUpdate",[],"CC-FR-024","UPD-003"],["exportPortableBackup",["destinationPath","acknowledgeUnencrypted"],"CC-SEC-006","PORTABLE-001"],["inspectPortableBackup",["archivePath"],"CC-SEC-006","PORTABLE-002"],["importPortableBackup",["archivePath","confirmed"],"CC-SEC-006","PORTABLE-003"]],
-  "topLevelCommandCount": 61,
+  "topLevelCommandsAdded": [["previewResume", ["personaId", "template"], "CC-FR-006", "RES-PREVIEW-001"],["getJobStatusEvents",["matchId"],"CC-FR-011","JOB-AUDIT-001"],["checkUpdate",[],"CC-FR-024","UPD-001"],["downloadUpdate",[],"CC-FR-024","UPD-002"],["installUpdate",[],"CC-FR-024","UPD-003"],["exportPortableBackup",["destinationPath","acknowledgeUnencrypted"],"CC-SEC-006","PORTABLE-001"],["inspectPortableBackup",["archivePath"],"CC-SEC-006","PORTABLE-002"],["importPortableBackup",["archivePath","confirmed"],"CC-SEC-006","PORTABLE-003"],["writeTextFile",["destinationPath","content"],"CC-FR-006","RES-MD-EXPORT-001"]],
+  "topLevelCommandCount": 62,
   "backgroundOperations": {
     "structure_experience": {
       "request": {

@@ -1650,9 +1650,33 @@ pub fn get_skill_resources(payload: Option<Value>) -> Envelope<Value> {
     match crate::infra::skills::builtin_skills(){Ok(v)=>match v.into_iter().find(|s|s.id==id){Some(s)=>Envelope::ok(json!(s.resources.iter().map(|r|json!({"resourceId":stable_id("sr",&[&s.id,&r.url]),"skillId":s.id,"kind":r.kind,"title":r.title,"source":r.source,"url":r.url,"estimatedHours":r.estimated_hours})).collect::<Vec<_>>())),None=>Envelope::error(ErrorCode::NotFound,"skill not found")},Err(_)=>Envelope::error(ErrorCode::Internal,"built-in skill catalog invalid")}
 }
 fn normalized_learning_items(c: &Connection, path_id: &str) -> Result<Vec<Value>, AppError> {
-    let mut s=c.prepare("SELECT i.id,i.skill_id,i.title,i.resource_url,i.resource_kind,i.estimated_hours,i.status,i.source,i.version,i.completion_note,lc.experience_id FROM learning_items i LEFT JOIN learning_conversions lc ON lc.item_id=i.id WHERE i.path_id=?1 ORDER BY i.id")?;
-    let rows=s.query_map([path_id],|r|Ok(json!({"itemId":r.get::<_,String>(0)?,"skillId":r.get::<_,String>(1)?,"title":r.get::<_,String>(2)?,"resourceUrl":r.get::<_,Option<String>>(3)?,"resourceKind":r.get::<_,String>(4)?,"estimatedHours":r.get::<_,i64>(5)?,"status":r.get::<_,String>(6)?,"source":r.get::<_,String>(7)?,"version":r.get::<_,i64>(8)?,"completionNote":r.get::<_,Option<String>>(9)?,"convertedExperienceId":r.get::<_,Option<String>>(10)?})))?.collect::<Result<Vec<_>,_>>()?;
+    let metadata: Value=c.query_row("SELECT items FROM learning_paths WHERE id=?1",[path_id],|r|r.get::<_,Option<String>>(0)).optional()?.flatten().and_then(|raw|serde_json::from_str(&raw).ok()).unwrap_or_else(||json!([]));
+    let by_id=metadata.as_array().into_iter().flatten().filter_map(|item|item.get("itemId").and_then(Value::as_str).map(|id|(id.to_owned(),item.clone()))).collect::<std::collections::HashMap<_,_>>();
+    let mut s=c.prepare("SELECT i.id,i.skill_id,i.title,i.resource_url,i.resource_kind,i.estimated_hours,i.status,i.source,i.version,i.completion_note,lc.experience_id FROM learning_items i LEFT JOIN learning_conversions lc ON lc.item_id=i.id WHERE i.path_id=?1")?;
+    let mut rows=s.query_map([path_id],|r|{let id=r.get::<_,String>(0)?;let extra=by_id.get(&id);Ok(json!({"itemId":id,"skillId":r.get::<_,String>(1)?,"title":r.get::<_,String>(2)?,"resourceUrl":r.get::<_,Option<String>>(3)?,"resourceKind":r.get::<_,String>(4)?,"estimatedHours":r.get::<_,i64>(5)?,"status":r.get::<_,String>(6)?,"source":r.get::<_,String>(7)?,"version":r.get::<_,i64>(8)?,"completionNote":r.get::<_,Option<String>>(9)?,"convertedExperienceId":r.get::<_,Option<String>>(10)?,"sequence":extra.and_then(|x|x.get("sequence")).and_then(Value::as_u64).unwrap_or(1),"objective":extra.and_then(|x|x.get("objective")).and_then(Value::as_str).unwrap_or("掌握核心概念"),"practiceTask":extra.and_then(|x|x.get("practiceTask")).and_then(Value::as_str).unwrap_or("完成一个可说明的实践练习"),"completionCriteria":extra.and_then(|x|x.get("completionCriteria")).and_then(Value::as_str).unwrap_or("记录实践过程和结果")}))})?.collect::<Result<Vec<_>,_>>()?;
+    rows.sort_by_key(|item|item.get("sequence").and_then(Value::as_u64).unwrap_or(u64::MAX));
     Ok(rows)
+}
+
+fn compact_learning_guidance(value: &str) -> Option<String> {
+    if value.contains("http://") || value.contains("https://") {
+        return None;
+    }
+    let cleaned = value
+        .chars()
+        .filter(|character| !matches!(character, '#' | '*' | '`' | '>' | '_' | '~' | '•'))
+        .collect::<String>();
+    let compact = cleaned.split_whitespace().collect::<Vec<_>>().join(" ");
+    if compact.is_empty() {
+        return None;
+    }
+    let mut chars = compact.chars();
+    let shortened = chars.by_ref().take(72).collect::<String>();
+    Some(if chars.next().is_some() {
+        format!("{}…", shortened.trim_end_matches(['，', '；', '。', '、']))
+    } else {
+        shortened
+    })
 }
 #[cfg_attr(feature = "desktop", tauri::command)]
 pub fn get_learning_paths_by_source(payload: Option<Value>) -> Envelope<Value> {
@@ -1663,7 +1687,7 @@ pub fn get_learning_paths_by_source(payload: Option<Value>) -> Envelope<Value> {
             .and_then(|v| v.get("sourceType"))
             .and_then(Value::as_str);
         if source.is_some_and(|v| {
-            !["skill_graph", "job_gap", "manual", "llm_with_skill_graph"].contains(&v)
+            !["skill_graph", "job_gap", "what_if", "manual", "llm_with_skill_graph"].contains(&v)
         }) {
             return Err(AppError::Validation("invalid sourceType".into()));
         }
@@ -1687,25 +1711,84 @@ pub fn get_learning_paths_by_source(payload: Option<Value>) -> Envelope<Value> {
     })())
 }
 #[cfg_attr(feature = "desktop", tauri::command)]
+pub fn delete_learning_path(payload: Option<Value>) -> Envelope<Value> {
+    result((|| {
+        let value = payload.ok_or_else(|| AppError::Validation("payload is required".into()))?;
+        let path_id = required(&value, "pathId")?;
+        let expected_version = value
+            .get("expectedVersion")
+            .and_then(Value::as_i64)
+            .ok_or_else(|| AppError::Validation("expectedVersion is required".into()))?;
+        let connection = connection()?;
+        let deleted = connection.execute(
+            "DELETE FROM learning_paths WHERE id=?1 AND version=?2",
+            rusqlite::params![path_id, expected_version],
+        )?;
+        if deleted == 0 {
+            let exists: bool = connection.query_row(
+                "SELECT EXISTS(SELECT 1 FROM learning_paths WHERE id=?1)",
+                [path_id],
+                |row| row.get(0),
+            )?;
+            return Err(if exists {
+                AppError::Conflict("learning path was modified".into())
+            } else {
+                AppError::NotFound("learning path".into())
+            });
+        }
+        Ok(json!({"deleted":true,"pathId":path_id}))
+    })())
+}
+#[cfg_attr(feature = "desktop", tauri::command)]
 pub fn get_learning_path(payload: Option<Value>) -> Envelope<Value> {
     result((|| {
         let v = payload.ok_or_else(|| AppError::Validation("payload is required".into()))?;
         let query = required(&v, "skill")?.to_lowercase();
-        let skill = crate::infra::skills::builtin_skills()
+        let mut c = connection()?;
+        let builtin = crate::infra::skills::builtin_skills()
             .map_err(|_| AppError::Internal)?
             .into_iter()
             .find(|s| {
                 s.id.to_lowercase() == query
                     || s.name.to_lowercase() == query
                     || s.aliases.iter().any(|a| a.to_lowercase() == query)
-            })
-            .ok_or_else(|| AppError::NotFound("skill".into()))?;
+            });
+        let skill = match builtin {
+            Some(skill) => skill,
+            None => c
+                .query_row(
+                    "SELECT id,owner_id,name,category,description,aliases,prerequisites,level,resources FROM custom_skills WHERE lower(id)=?1 OR lower(name)=?1 LIMIT 1",
+                    [&query],
+                    |r| {
+                        let values: Value = serde_json::from_str(&r.get::<_, String>(8)?)
+                            .unwrap_or_else(|_| json!([]));
+                        let resources = values.as_array().into_iter().flatten().filter_map(|item| {
+                            Some(crate::domain::skills::LearningResource {
+                                kind: item.get("kind")?.as_str()?.to_owned(),
+                                title: item.get("title")?.as_str()?.to_owned(),
+                                source: item.get("source")?.as_str()?.to_owned(),
+                                url: item.get("url")?.as_str()?.to_owned(),
+                                estimated_hours: item.get("estimatedHours").and_then(Value::as_u64).unwrap_or(1) as u16,
+                            })
+                        }).collect();
+                        Ok(crate::domain::skills::Skill {
+                            id: r.get(0)?,
+                            origin: crate::domain::skills::SkillOrigin::Custom { owner_id: r.get(1)? },
+                            name: r.get(2)?, category: r.get(3)?, description: r.get(4)?,
+                            aliases: serde_json::from_str(&r.get::<_, String>(5)?).unwrap_or_default(),
+                            prerequisites: serde_json::from_str(&r.get::<_, String>(6)?).unwrap_or_default(),
+                            level: r.get(7)?, resources,
+                        })
+                    },
+                )
+                .optional()?
+                .ok_or_else(|| AppError::NotFound("skill".into()))?,
+        };
         if skill.resources.len() < 3 {
             return Err(AppError::Validation(
                 "trusted catalog has fewer than three resources for this gap".into(),
             ));
         }
-        let mut c = connection()?;
         let persona_id = if let Some(id) = v.get("personaId").and_then(Value::as_str) {
             id.to_owned()
         } else {
@@ -1722,24 +1805,71 @@ pub fn get_learning_path(payload: Option<Value>) -> Envelope<Value> {
                 }
             })?
         };
-        let guidance = llm_generate(
+        let (persona_name, target_roles, positioning): (String, String, String) = c.query_row(
+            "SELECT name,target_job_profiles,COALESCE(identity_statement,'') FROM personas WHERE id=?1",
+            [&persona_id], |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?)),
+        ).map_err(|e| if matches!(e,rusqlite::Error::QueryReturnedNoRows){AppError::NotFound("persona".into())}else{e.into()})?;
+        let origin=v.get("origin").and_then(Value::as_str).unwrap_or("skill_graph");
+        if !["skill_graph","job_gap","what_if","manual"].contains(&origin){return Err(AppError::Validation("invalid learning path origin".into()));}
+        let job_match_id=v.get("jobMatchId").and_then(Value::as_str).filter(|x|!x.trim().is_empty());
+        let job_context=if origin=="job_gap"||origin=="what_if"{
+            let match_id=job_match_id.ok_or_else(||AppError::Validation("jobMatchId is required for job gap learning".into()))?;
+            let (title,missing):(String,String)=c.query_row("SELECT COALESCE(j.title,'未命名岗位'),m.missing_skills FROM job_matches m JOIN job_descs j ON j.id=m.job_desc_id WHERE m.id=?1 AND m.persona_id=?2",rusqlite::params![match_id,persona_id],|r|Ok((r.get(0)?,r.get(1)?))).map_err(|e|if matches!(e,rusqlite::Error::QueryReturnedNoRows){AppError::Validation("job match does not belong to the selected persona".into())}else{e.into()})?;
+            let gaps=serde_json::from_str::<Vec<String>>(&missing).unwrap_or_default();
+            if !gaps.iter().any(|gap|gap.eq_ignore_ascii_case(&skill.name)||gap.eq_ignore_ascii_case(&skill.id)||skill.aliases.iter().any(|alias|gap.eq_ignore_ascii_case(alias))){return Err(AppError::Validation("skill is not a gap in the selected job match".into()));}
+            Some((match_id.to_owned(),title))
+        }else{None};
+        let regenerate=v.get("regenerate").and_then(Value::as_bool).unwrap_or(false);
+        // Repeated clicks are idempotent: return the current active path instead of
+        // failing on the stable path id's primary key.
+        if !regenerate { if let Some((path_id, target_gap, source_type, context_json, version)) = c
+            .query_row(
+                "SELECT id,target_gap,source_type,context_json,version FROM learning_paths WHERE persona_id=?1 AND status='active' AND json_extract(context_json,'$.skillId')=?2 AND COALESCE(json_extract(context_json,'$.origin'),'skill_graph')=?3 AND COALESCE(json_extract(context_json,'$.jobMatchId'),'')=?4 ORDER BY created_at DESC,id DESC LIMIT 1",
+                rusqlite::params![persona_id, skill.id,origin,job_match_id.unwrap_or("")],
+                |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?, r.get::<_, String>(2)?, r.get::<_, String>(3)?, r.get::<_, i64>(4)?)),
+            )
+            .optional()?
+        {
+            let context: Value = serde_json::from_str(&context_json).map_err(|_| AppError::Internal)?;
+            let guidance = context.get("guidance").and_then(Value::as_str).unwrap_or("");
+            let items = normalized_learning_items(&c, &path_id)?;
+            return Ok(json!({"pathId":path_id,"personaId":persona_id,"targetGap":target_gap,"skillId":skill.id,"sourceType":source_type,"guidance":guidance,"context":context,"status":"active","version":version,"existing":true,"items":items}));
+        }}
+        if regenerate { c.execute("UPDATE learning_paths SET status='archived',updated_at=CURRENT_TIMESTAMP WHERE persona_id=?1 AND status='active' AND json_extract(context_json,'$.skillId')=?2 AND COALESCE(json_extract(context_json,'$.origin'),'skill_graph')=?3 AND COALESCE(json_extract(context_json,'$.jobMatchId'),'')=?4",rusqlite::params![persona_id,skill.id,origin,job_match_id.unwrap_or("")])?; }
+        let ai_guidance = llm_generate(
             &c,
             format!(
-                "为技能“{}”制定三步可执行学习路径。仅返回简洁中文，不虚构证书或成果。",
-                skill.name
+                "你是 CareerCraft 的学习路径规划助手。技能：{}；当前职业身份：{}；目标岗位：{}；职业定位：{}；路径来源：{}。\n只输出一行中文，不超过 48 个汉字，严格使用格式：重点：<短语>；实践：<一个可验证动作>。\n不要解释或复述上下文。禁止井号、星号、项目符号、Markdown、标题、编号、列表、链接、课程和证书；不要虚构经历或成果。",
+                skill.name,persona_name,target_roles,positioning,origin
             ),
-        )?;
-        let path_id = stable_id("lp", &[&persona_id, &skill.id, &guidance]);
-        let items=skill.resources.iter().take(3).map(|r|json!({"itemId":stable_id("li",&[&path_id,&skill.id,&r.url]),"skillId":skill.id,"title":r.title,"resourceUrl":r.url,"resourceKind":r.kind,"estimatedHours":r.estimated_hours,"status":"pending","source":r.source,"version":1,"completionNote":Value::Null,"convertedExperienceId":Value::Null})).collect::<Vec<_>>();
-        let context = json!({"skillId":skill.id,"skillName":skill.name,"requestedSkill":query,"guidance":guidance});
+        );
+        // The trusted catalog is sufficient to build an actionable path. AI enriches
+        // the guidance when configured, but lack of a provider must not disable this
+        // core workflow.
+        let (guidance, generation_mode) = match ai_guidance.ok().and_then(|value| compact_learning_guidance(&value)) {
+            Some(value) => (value, "ai_enhanced"),
+            None => (
+                format!(
+                    "按顺序完成 {} 的三项精选资源；每项学习后记录实践结果，再进入下一项。",
+                    skill.name
+                ),
+                "rules_only",
+            ),
+        };
+        let job_id=job_context.as_ref().map(|x|x.0.as_str()).unwrap_or("");
+        let generation_nonce=std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_nanos().to_string();
+        let path_id = stable_id("lp", &[&persona_id, &skill.id,origin,job_id,&generation_nonce]);
+        let items=skill.resources.iter().take(5).enumerate().map(|(index,r)|{let sequence=index+1;json!({"itemId":stable_id("li",&[&path_id,&skill.id,&r.url]),"skillId":skill.id,"title":r.title,"resourceUrl":r.url,"resourceKind":r.kind,"estimatedHours":r.estimated_hours,"status":"pending","source":r.source,"version":1,"completionNote":Value::Null,"convertedExperienceId":Value::Null,"sequence":sequence,"objective":format!("第 {} 步：通过《{}》掌握 {} 的核心内容",sequence,r.title,skill.name),"practiceTask":format!("结合目标角色完成一次 {} 实践，并记录过程与结果",skill.name),"completionCriteria":"提交可核验的实践说明、产出链接或复盘；仅阅读资源不算完成"})}).collect::<Vec<_>>();
+        let reason=job_context.as_ref().map(|(_,title)|format!("补强岗位“{}”的技能缺口",title)).unwrap_or_else(||if origin=="manual"{format!("为角色“{}”主动规划",persona_name)}else{format!("从技能图谱为角色“{}”规划",persona_name)});
+        let context = json!({"skillId":skill.id,"skillName":skill.name,"requestedSkill":query,"origin":origin,"jobMatchId":job_context.as_ref().map(|x|x.0.as_str()),"jobTitle":job_context.as_ref().map(|x|x.1.as_str()),"personaName":persona_name,"generationMode":generation_mode,"reason":reason,"guidance":guidance});
         let tx = c.transaction()?;
-        tx.execute("INSERT INTO learning_paths(id,persona_id,target_gap,items,source_type,status,context_json,version) VALUES(?1,?2,?3,?4,'llm_with_skill_graph','active',?5,1)",rusqlite::params![path_id,persona_id,skill.name,serde_json::to_string(&items).map_err(|_|AppError::Internal)?,context.to_string()])?;
+        tx.execute("INSERT INTO learning_paths(id,persona_id,target_gap,items,source_type,status,context_json,version) VALUES(?1,?2,?3,?4,?5,'active',?6,1)",rusqlite::params![path_id,persona_id,skill.name,serde_json::to_string(&items).map_err(|_|AppError::Internal)?,origin,context.to_string()])?;
         for item in &items {
             tx.execute("INSERT INTO learning_items(id,path_id,skill_id,title,resource_url,estimated_hours,status,source,resource_kind,version) VALUES(?1,?2,?3,?4,?5,?6,'pending',?7,?8,1)",rusqlite::params![item["itemId"].as_str(),path_id,skill.id,item["title"].as_str(),item["resourceUrl"].as_str(),item["estimatedHours"].as_u64(),item["source"].as_str(),item["resourceKind"].as_str()])?;
         }
         tx.commit()?;
         Ok(
-            json!({"pathId":path_id,"personaId":persona_id,"targetGap":skill.name,"skillId":skill.id,"sourceType":"llm_with_skill_graph","guidance":guidance,"context":context,"status":"active","version":1,"items":items}),
+            json!({"pathId":path_id,"personaId":persona_id,"targetGap":skill.name,"skillId":skill.id,"sourceType":origin,"guidance":guidance,"context":context,"status":"active","version":1,"existing":false,"items":items}),
         )
     })())
 }
@@ -1861,6 +1991,132 @@ pub fn create_custom_skill(payload: Option<Value>) -> Envelope<Value> {
         Ok(json!({"id":id}))
     })())
 }
+
+fn parse_custom_skill_resources(raw: &str, skill_id: &str) -> Result<Vec<Value>, AppError> {
+    let parsed: Value = serde_json::from_str(strip_llm_json_fence(raw)).map_err(|_| {
+        AppError::Unavailable("AI resource analysis must return valid JSON".into())
+    })?;
+    let rows = parsed.get("resources").and_then(Value::as_array).ok_or_else(|| {
+        AppError::Unavailable("AI resource analysis did not return resources".into())
+    })?;
+    let mut seen = std::collections::BTreeSet::new();
+    let mut resources = Vec::new();
+    for row in rows {
+        let title = row.get("title").and_then(Value::as_str).unwrap_or("").trim();
+        let source = row.get("source").and_then(Value::as_str).unwrap_or("").trim();
+        let kind = row.get("kind").and_then(Value::as_str).unwrap_or("resource").trim();
+        let url = row.get("url").and_then(Value::as_str).unwrap_or("").trim();
+        let hours = row.get("estimatedHours").and_then(Value::as_u64).unwrap_or(1).clamp(1, 100);
+        let valid_url = reqwest::Url::parse(url).ok().is_some_and(|u| {
+            matches!(u.scheme(), "http" | "https") && u.host_str().is_some()
+        });
+        let key = url.trim_end_matches('/').to_ascii_lowercase();
+        if title.is_empty() || source.is_empty() || !valid_url || !seen.insert(key) {
+            continue;
+        }
+        resources.push(json!({
+            "resourceId": stable_id("csr", &[skill_id, url]), "skillId": skill_id,
+            "kind": kind, "title": title, "source": source, "url": url,
+            "estimatedHours": hours
+        }));
+    }
+    if resources.len() < 3 {
+        return Err(AppError::Unavailable(
+            "AI resource analysis returned fewer than three valid, unique HTTP(S) resources".into(),
+        ));
+    }
+    resources.truncate(5);
+    Ok(resources)
+}
+
+fn persist_custom_skill_resources(
+    c: &Connection,
+    skill_id: &str,
+    owner: &str,
+    resources: &[Value],
+) -> Result<(), AppError> {
+    let serialized = serde_json::to_string(resources).map_err(|_| AppError::Internal)?;
+    if c.execute(
+        "UPDATE custom_skills SET resources=?1,updated_at=CURRENT_TIMESTAMP WHERE id=?2 AND owner_id=?3",
+        rusqlite::params![serialized, skill_id, owner],
+    )? == 0 {
+        return Err(AppError::NotFound("custom skill".into()));
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod custom_skill_resource_tests {
+    use super::{parse_custom_skill_resources, persist_custom_skill_resources};
+
+    #[test]
+    fn accepts_fenced_ai_resources_and_adds_stable_identity() {
+        let raw = r#"```json
+{"resources":[
+ {"kind":"doc","title":"Official A","source":"Org A","url":"https://example.com/a","estimatedHours":2},
+ {"kind":"course","title":"Course B","source":"Org B","url":"https://example.org/b","estimatedHours":5},
+ {"kind":"repo","title":"Repo C","source":"Org C","url":"https://github.com/example/c","estimatedHours":3}
+]}
+```"#;
+        let resources = parse_custom_skill_resources(raw, "skill-1").unwrap();
+        assert_eq!(resources.len(), 3);
+        assert_eq!(resources[0]["skillId"], "skill-1");
+        assert!(resources[0]["resourceId"].as_str().unwrap().starts_with("csr-"));
+    }
+
+    #[test]
+    fn rejects_unsafe_duplicate_or_insufficient_resource_sets() {
+        let raw = r#"{"resources":[
+ {"title":"Bad","source":"X","url":"file:///tmp/a"},
+ {"title":"One","source":"X","url":"https://example.com/a"},
+ {"title":"Duplicate","source":"X","url":"https://example.com/a/"}
+]}"#;
+        assert!(parse_custom_skill_resources(raw, "skill-1").is_err());
+    }
+
+    #[test]
+    fn persists_valid_resources_for_the_owned_custom_skill() {
+        let c = rusqlite::Connection::open_in_memory().unwrap();
+        c.execute_batch("CREATE TABLE custom_skills(id TEXT,owner_id TEXT,resources TEXT,updated_at TEXT); INSERT INTO custom_skills VALUES('skill-1','default','[]','old'); INSERT INTO custom_skills VALUES('skill-1','other','[]','old');").unwrap();
+        let resources = parse_custom_skill_resources(
+            r#"{"resources":[{"title":"A","source":"A","url":"https://a.example/doc"},{"title":"B","source":"B","url":"https://b.example/course"},{"title":"C","source":"C","url":"https://c.example/repo"}]}"#,
+            "skill-1",
+        ).unwrap();
+        persist_custom_skill_resources(&c, "skill-1", "default", &resources).unwrap();
+        let saved: String = c.query_row("SELECT resources FROM custom_skills WHERE id='skill-1' AND owner_id='default'", [], |r| r.get(0)).unwrap();
+        let untouched: String = c.query_row("SELECT resources FROM custom_skills WHERE id='skill-1' AND owner_id='other'", [], |r| r.get(0)).unwrap();
+        assert_eq!(serde_json::from_str::<serde_json::Value>(&saved).unwrap().as_array().unwrap().len(), 3);
+        assert_eq!(untouched, "[]");
+    }
+}
+
+pub(crate) fn enrich_custom_skill_resources_with_cancel(
+    payload: Option<Value>,
+    cancel: &crate::infra::llm::CancellationToken,
+) -> Envelope<Value> {
+    result((|| {
+        let value = payload.ok_or_else(|| AppError::Validation("payload is required".into()))?;
+        let skill_id = required(&value, "skillId")?.to_owned();
+        let owner = value.get("ownerId").and_then(Value::as_str).unwrap_or("default");
+        let c = connection()?;
+        let (name, category, description) = c.query_row(
+            "SELECT name,category,description FROM custom_skills WHERE id=?1 AND owner_id=?2",
+            rusqlite::params![skill_id, owner],
+            |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?, r.get::<_, String>(2)?)),
+        ).map_err(|e| if matches!(e, rusqlite::Error::QueryReturnedNoRows) {
+            AppError::NotFound("custom skill".into())
+        } else { e.into() })?;
+        let prompt = format!(
+            "You curate trustworthy learning resources for a career skill. Return ONE JSON object only, no markdown: \
+{{\"resources\":[{{\"kind\":\"course|video|repo|article|book|doc\",\"title\":\"...\",\"source\":\"publisher or organization\",\"url\":\"https://...\",\"estimatedHours\":1}}]}}. \
+Provide 3 to 5 distinct, directly relevant, publicly accessible resources. Prefer official documentation, recognized universities, established publishers, and canonical repositories. Never invent URLs. Skill: {name}; category: {category}; description: {description}"
+        );
+        let raw = generate_for_persona_with_tokens(None, prompt, 1600, cancel)?;
+        let resources = parse_custom_skill_resources(&raw, &skill_id)?;
+        persist_custom_skill_resources(&c, &skill_id, owner, &resources)?;
+        Ok(json!({"skillId":skill_id,"resources":resources,"resourceCount":resources.len()}))
+    })())
+}
 #[cfg_attr(feature = "desktop", tauri::command)]
 pub fn update_custom_skill(payload: Option<Value>) -> Envelope<Value> {
     result((|| {
@@ -1894,18 +2150,39 @@ pub fn delete_custom_skill(payload: Option<Value>) -> Envelope<Value> {
 }
 #[cfg_attr(feature = "desktop", tauri::command)]
 pub fn simulate_skill_what_if(payload: Option<Value>) -> Envelope<Value> {
-    let Some(v) = payload else {
-        return Envelope::error(ErrorCode::Validation, "payload is required");
-    };
-    let parse = |key| str_vec(v.get(key));
-    let r = crate::domain::skills::simulate_skills(
-        &parse("requiredSkills"),
-        &parse("currentSkills"),
-        &parse("hypotheticalSkills"),
-    );
-    Envelope::ok(
-        json!({"baselineScore":r.baseline_score,"simulatedScore":r.simulated_score,"delta":r.delta,"addedSkills":r.added_skills,"remainingMissing":r.remaining_missing}),
-    )
+    result((|| {
+        let v = payload.ok_or_else(|| AppError::Validation("payload is required".into()))?;
+        let persona_id = required(&v, "personaId")?;
+        let match_id = required(&v, "jobMatchId")?;
+        let hypothetical = str_vec(v.get("hypotheticalSkills"));
+        let c = connection()?;
+        let (stored_persona, job_id, baseline, matched_json, missing_json, breakdown_json): (String,String,u8,String,String,String) = c.query_row(
+            "SELECT persona_id,job_desc_id,match_score,COALESCE(matched_skills,'[]'),COALESCE(missing_skills,'[]'),COALESCE(score_breakdown,'{}') FROM job_matches WHERE id=?1",
+            [&match_id], |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?,r.get(5)?))
+        ).map_err(|e| if matches!(e,rusqlite::Error::QueryReturnedNoRows){AppError::NotFound("job match".into())}else{e.into()})?;
+        if stored_persona != persona_id { return Err(AppError::Validation("job match does not belong to persona".into())); }
+        let current: Vec<String> = serde_json::from_str(&matched_json).unwrap_or_default();
+        let missing: Vec<String> = serde_json::from_str(&missing_json).unwrap_or_default();
+        let required_skills = current.iter().chain(missing.iter()).cloned().collect::<Vec<_>>();
+        if required_skills.is_empty() { return Err(AppError::Validation("job match has no skill requirements".into())); }
+        let available = current.iter().chain(hypothetical.iter()).cloned().collect::<Vec<_>>();
+        let (simulated_skill, newly_matched, remaining) = crate::domain::jobs::skill_match(&required_skills, &available);
+        let breakdown: Value = serde_json::from_str(&breakdown_json).unwrap_or_else(|_| json!({}));
+        let number = |key: &str| breakdown.get(key).and_then(Value::as_f64).unwrap_or(0.0) as f32;
+        let baseline_skill = number("skills");
+        let fixed = number("experience") + number("industry") + number("education");
+        let simulated = (fixed + simulated_skill).round().clamp(0.0,100.0) as u8;
+        let current_set = current.iter().map(|s|s.trim().to_lowercase()).collect::<std::collections::BTreeSet<_>>();
+        let added = newly_matched.into_iter().filter(|s|!current_set.contains(s)).collect::<Vec<_>>();
+        Ok(json!({
+            "personaId":persona_id,"jobMatchId":match_id,"jobDescId":job_id,
+            "baselineScore":baseline,"simulatedScore":simulated,"delta":simulated as i16-baseline as i16,
+            "baselineBreakdown":{"skills":baseline_skill,"experience":number("experience"),"industry":number("industry"),"education":number("education")},
+            "simulatedBreakdown":{"skills":simulated_skill,"experience":number("experience"),"industry":number("industry"),"education":number("education")},
+            "requiredSkills":required_skills,"currentSkills":current,"addedSkills":added,"remainingMissing":remaining,
+            "assumption":"假设掌握不等于已有项目证据，结果仅供学习规划"
+        }))
+    })())
 }
 #[cfg_attr(feature = "desktop", tauri::command)]
 pub fn update_learning_progress(payload: Option<Value>) -> Envelope<Value> {
@@ -1961,18 +2238,20 @@ pub fn update_learning_progress(payload: Option<Value>) -> Envelope<Value> {
         if n != 1 {
             return Err(AppError::Conflict("stale learning item version".into()));
         }
+        let path_id=required(&v,"pathId")?;
+        let remaining:i64=tx.query_row("SELECT COUNT(*) FROM learning_items WHERE path_id=?1 AND status NOT IN ('completed','skipped')",[path_id],|r|r.get(0))?;
         tx.execute(
-            "UPDATE learning_paths SET version=version+1,updated_at=CURRENT_TIMESTAMP WHERE id=?1",
-            [required(&v, "pathId")?],
+            "UPDATE learning_paths SET status=CASE WHEN ?2=0 THEN 'completed' ELSE 'active' END,version=version+1,updated_at=CURRENT_TIMESTAMP WHERE id=?1",
+            rusqlite::params![path_id,remaining],
         )?;
         let path_version: i64 = tx.query_row(
             "SELECT version FROM learning_paths WHERE id=?1",
-            [required(&v, "pathId")?],
+            [path_id],
             |r| r.get(0),
         )?;
         tx.commit()?;
         Ok(
-            json!({"itemId":id,"status":next,"version":expected+1,"pathVersion":path_version,"completionNote":v.get("completionNote").and_then(Value::as_str)}),
+            json!({"itemId":id,"status":next,"version":expected+1,"pathVersion":path_version,"pathStatus":if remaining==0{"completed"}else{"active"},"completionNote":v.get("completionNote").and_then(Value::as_str)}),
         )
     })())
 }
@@ -2166,14 +2445,15 @@ pub(crate) mod tests {
         assert_eq!(expected, CONTRACT_COMMANDS);
     }
     #[test]
-    fn v3_freezes_structure_experience_preview_and_61_commands() {
+    fn v3_freezes_structure_experience_preview_and_62_commands() {
         let v: Value =
             serde_json::from_str(include_str!("../../../contracts/commands/v3/commands.json"))
                 .unwrap();
-        assert_eq!(v["topLevelCommandCount"], 61);
+        assert_eq!(v["topLevelCommandCount"], 62);
         assert_eq!(v["topLevelCommandsAdded"][0][0], "previewResume");
         assert_eq!(v["topLevelCommandsAdded"][1][0], "getJobStatusEvents");
         assert_eq!(v["topLevelCommandsAdded"][2][0], "checkUpdate");
+        assert_eq!(v["topLevelCommandsAdded"][8][0], "writeTextFile");
         let op = &v["backgroundOperations"]["structure_experience"];
         assert_eq!(op["request"]["required"], json!(["rawDescription"]));
         assert_eq!(
@@ -2293,6 +2573,87 @@ pub(crate) mod tests {
             )
         }
         std::env::remove_var("CAREERCRAFT_DB_PATH")
+    }
+    #[test]
+    fn learning_path_works_without_ai_provider_and_is_idempotent() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("learning-path-fallback.db");
+        drop(crate::infra::db::Database::open_and_migrate(&path).unwrap());
+        std::env::set_var("CAREERCRAFT_DB_PATH", &path);
+        let c = Connection::open(&path).unwrap();
+        c.execute("INSERT INTO personas(id,user_id,name,is_default,capability_weights,target_job_profiles,max_experiences) VALUES('p','u','P',1,'{}','[]',5)",[]).unwrap();
+        drop(c);
+
+        let first = value(get_learning_path(Some(json!({"skill":"user_research"}))));
+        assert_eq!(first["success"], true);
+        assert_eq!(first["data"]["sourceType"], "skill_graph");
+        assert_eq!(first["data"]["items"].as_array().unwrap().len(), 3);
+        let second = value(get_learning_path(Some(json!({"skill":"user_research"}))));
+        assert_eq!(second["success"], true);
+        assert_eq!(second["data"]["pathId"], first["data"]["pathId"]);
+        let c = Connection::open(&path).unwrap();
+        assert_eq!(
+            c.query_row("SELECT COUNT(*) FROM learning_paths", [], |r| r
+                .get::<_, u32>(0))
+                .unwrap(),
+            1
+        );
+        let resources = json!([
+            {"kind":"course","title":"A","source":"S","url":"https://example.com/a","estimatedHours":1},
+            {"kind":"article","title":"B","source":"S","url":"https://example.com/b","estimatedHours":2},
+            {"kind":"repo","title":"C","source":"S","url":"https://example.com/c","estimatedHours":3}
+        ]);
+        c.execute("INSERT INTO custom_skills(id,owner_id,name,category,description,aliases,prerequisites,level,resources) VALUES('custom-ai','default','Custom AI','technical','','[]','[]',1,?1)", [resources.to_string()]).unwrap();
+        drop(c);
+        let custom = value(get_learning_path(Some(json!({"skill":"custom-ai"}))));
+        assert_eq!(custom["success"], true);
+        assert_eq!(custom["data"]["items"].as_array().unwrap().len(), 3);
+        std::env::remove_var("CAREERCRAFT_DB_PATH");
+    }
+    #[test]
+    fn learning_guidance_is_compact_and_rejects_model_links() {
+        let verbose = format!("### 重点：理解核心概念；**实践**：完成一个可验证的小任务。 {}", "补充说明 ".repeat(40));
+        let compact = compact_learning_guidance(&verbose).unwrap();
+        assert!(compact.chars().count() <= 73);
+        assert!(!compact.contains('\n'));
+        assert!(!compact.contains('#'));
+        assert!(!compact.contains('*'));
+        assert!(compact.ends_with('…'));
+        assert!(compact_learning_guidance("重点：阅读 https://example.com；实践：总结").is_none());
+        assert!(compact_learning_guidance("   \n  ").is_none());
+    }
+    #[test]
+    fn job_gap_learning_keeps_context_and_regeneration_archives_the_old_path() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("learning-job-context.db");
+        drop(crate::infra::db::Database::open_and_migrate(&path).unwrap());
+        std::env::set_var("CAREERCRAFT_DB_PATH", &path);
+        let c = Connection::open(&path).unwrap();
+        c.execute("INSERT INTO personas(id,user_id,name,is_default,identity_statement,capability_weights,target_job_profiles,max_experiences) VALUES('p','u','产品角色',1,'补强研究能力','{}','[\"产品经理\"]',5)",[]).unwrap();
+        c.execute("INSERT INTO job_descs(id,raw_text,title) VALUES('j','需要用户研究','产品经理')",[]).unwrap();
+        c.execute("INSERT INTO job_matches(id,persona_id,job_desc_id,match_score,matched_skills,missing_skills,score_breakdown) VALUES('m','p','j',60,'[]','[\"用户研究\"]','{}')",[]).unwrap();
+        drop(c);
+        let request=json!({"skill":"user_research","personaId":"p","jobMatchId":"m","origin":"job_gap"});
+        let first=value(get_learning_path(Some(request.clone())));
+        assert_eq!(first["success"],true);
+        assert_eq!(first["data"]["context"]["jobMatchId"],"m");
+        assert_eq!(first["data"]["context"]["origin"],"job_gap");
+        assert_eq!(first["data"]["items"][0]["sequence"],1);
+        assert!(first["data"]["items"][0]["practiceTask"].as_str().is_some_and(|x|!x.is_empty()));
+        let repeated=value(get_learning_path(Some(request.clone())));
+        assert_eq!(repeated["data"]["pathId"],first["data"]["pathId"]);
+        assert_eq!(repeated["data"]["existing"],true);
+        assert_eq!(repeated["data"]["items"][0]["practiceTask"],first["data"]["items"][0]["practiceTask"]);
+        let mut regenerate=request;
+        regenerate["regenerate"]=json!(true);
+        let next=value(get_learning_path(Some(regenerate)));
+        assert_ne!(next["data"]["pathId"],first["data"]["pathId"]);
+        let c=Connection::open(&path).unwrap();
+        assert_eq!(c.query_row("SELECT COUNT(*) FROM learning_paths WHERE status='archived'",[],|r|r.get::<_,i64>(0)).unwrap(),1);
+        assert_eq!(c.query_row("SELECT COUNT(*) FROM learning_paths WHERE status='active'",[],|r|r.get::<_,i64>(0)).unwrap(),1);
+        std::env::remove_var("CAREERCRAFT_DB_PATH");
     }
     #[test]
     fn external_url_token_is_bound_and_single_use() {
@@ -2462,12 +2823,11 @@ pub(crate) mod tests {
             )))["success"],
             true
         );
-        assert_eq!(
-            value(simulate_skill_what_if(Some(
-                json!({"requiredSkills":["Rust","SQL"],"currentSkills":["Rust"],"hypotheticalSkills":["SQL"]})
-            )))["data"]["delta"],
-            50
-        );
+        let what_if = value(simulate_skill_what_if(Some(json!({
+            "personaId":"p1","jobMatchId":match_id,"hypotheticalSkills":["SQL"]
+        }))));
+        assert_eq!(what_if["success"], true);
+        assert_eq!(what_if["data"]["jobMatchId"], match_id);
         {
             let c = connection().unwrap();
             c.execute("INSERT INTO learning_paths(id,persona_id,target_gap,status) VALUES('lp1','p1','Rust','active')",[]).unwrap();
@@ -2479,12 +2839,11 @@ pub(crate) mod tests {
             )))["data"]["version"],
             2
         );
-        assert_eq!(
-            value(update_learning_progress(Some(
-                json!({"pathId":"lp1","itemId":"li1","status":"completed","completionNote":"完成 CLI 项目","expectedVersion":2})
-            )))["data"]["version"],
-            3
-        );
+        let completed=value(update_learning_progress(Some(
+            json!({"pathId":"lp1","itemId":"li1","status":"completed","completionNote":"完成 CLI 项目","expectedVersion":2})
+        )));
+        assert_eq!(completed["data"]["version"],3);
+        assert_eq!(completed["data"]["pathStatus"],"completed");
         let listed = value(get_learning_paths_by_source(Some(
             json!({"sourceType":"manual"}),
         )));
@@ -2549,9 +2908,11 @@ pub(crate) mod tests {
             "CONFLICT"
         );
         {
+            let stale_delete = value(delete_learning_path(Some(json!({"pathId":"lp1","expectedVersion":1}))));
+            assert_eq!(stale_delete["error"]["code"], "CONFLICT");
+            let deleted = value(delete_learning_path(Some(json!({"pathId":"lp1","expectedVersion":3}))));
+            assert_eq!(deleted["success"], true);
             let c = connection().unwrap();
-            c.execute("DELETE FROM learning_paths WHERE id='lp1'", [])
-                .unwrap();
             let after_path:(Option<String>,Option<String>,String)=c.query_row("SELECT item_id,experience_id,completion_note_snapshot FROM learning_conversions",[],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).unwrap();
             assert_eq!(
                 after_path,

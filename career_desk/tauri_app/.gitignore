@@ -10,4 +10,6 @@ target/
 src-tauri/target/
 src-tauri/target-*/
 startup-*.log
+.static-*.log
+.acceptance-static-*.log
 *.manifest

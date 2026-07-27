@@ -39,6 +39,7 @@ fn run_operation(
         }
         "reframe_resume" => crate::interface::commands::reframe_resume_with_cancel(payload, cancel),
         "generate_learning_path" => get_learning_path(payload),
+        "enrich_custom_skill_resources" => enrich_custom_skill_resources_with_cancel(payload, cancel),
         "export_resume_pdf" => export_resume_pdf(payload),
         "import_file" => import_file(payload),
         "import_experiences" => import_experiences(payload),
@@ -889,6 +890,7 @@ pub fn run() {
             reset_reframe,
             get_learning_path,
             get_learning_paths_by_source,
+            delete_learning_path,
             get_skill_graph,
             get_skill_resources,
             search_skills,

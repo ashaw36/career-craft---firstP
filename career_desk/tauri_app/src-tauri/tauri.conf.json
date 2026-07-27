@@ -6,7 +6,7 @@
   "identifier": "com.careercraft.desktop",
   "build": {
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:1420",
+    "devUrl": "http://127.0.0.1:1420",
     "beforeDevCommand": "npm run dev -- --port 1420 --host 127.0.0.1",
     "beforeBuildCommand": "npm run build"
   },

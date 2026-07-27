@@ -44,7 +44,7 @@ export function bind(
   root: HTMLElement,
   source: WorkspaceDataSource & ExperienceActions,
   tasks: TaskStore,
-  reload: () => Promise<void>,
+  _reload: () => Promise<void>,
   onImportRaw?: (raw: string) => void,
 ) {
   root.querySelector<HTMLElement>('[data-action="import-experience"]')?.addEventListener("click", () => {
